@@ -4,6 +4,8 @@
 nutrisnap-release.jks
 local.properties
 google-services.json
+# Firebase App Distribution testers (contains email addresses)
+firebase/appdistribution-testers.txt
 *.p12
 *.pem
 

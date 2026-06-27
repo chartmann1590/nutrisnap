@@ -1,0 +1,24 @@
+{
+  "firebase": "nutrisnap-tracker-2026",
+  "crashlytics": {
+    "enabled": true,
+    "autoinit": true,
+    "mappingFileUpload": true
+  },
+  "performance": {
+    "enabled": true,
+    "autoinit": true
+  },
+  "analytics": {
+    "enabled": true
+  },
+  "remoteconfig": {
+    "template": "firebase/remote-config.json"
+  },
+  "inappmessaging": {
+    "enabled": true
+  },
+  "appdistribution": {
+    "app_id": "1:146168597801:android:1fa8d167a8893b3b0bbb38"
+  }
+}

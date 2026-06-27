@@ -1,0 +1,17 @@
+{
+  "conditions": [],
+  "parameters": {
+    "enable_pip_chat": {
+      "defaultValue": { "value": "true" },
+      "description": "Enable the Pip chat companion feature"
+    },
+    "enable_reactive_mascot": {
+      "defaultValue": { "value": "true" },
+      "description": "Enable the reactive mascot animation"
+    },
+    "model_download_retry_count": {
+      "defaultValue": { "value": "3" },
+      "description": "Number of retries on model download failure"
+    }
+  }
+}

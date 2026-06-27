@@ -56,6 +56,7 @@ fun DashboardScreen(
     onOpenMeal: (Long) -> Unit = {},
     onAddMeal: () -> Unit = {},
     onOpenSettings: () -> Unit,
+    onOpenPipChat: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -94,7 +95,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                HeaderSection(state, celebrating = showConfetti)
+                HeaderSection(state, celebrating = showConfetti, onPipTap = onOpenPipChat)
             }
 
             item {
@@ -133,10 +134,10 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeaderSection(state: DashboardUiState, celebrating: Boolean) {
+private fun HeaderSection(state: DashboardUiState, celebrating: Boolean, onPipTap: () -> Unit) {
     val mood = if (celebrating) PipMood.Celebrate else pipMoodFor(state)
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Pip(size = 56.dp, mood = mood, animated = true)
+        Pip(size = 56.dp, mood = mood, animated = true, onPoke = onPipTap)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("Hey there!", style = MaterialTheme.typography.headlineMedium)

@@ -1,6 +1,7 @@
 package com.charles.nutrisnap.feature.settings
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.data.ModelRepository
 import com.charles.nutrisnap.data.ModelState
@@ -8,6 +9,10 @@ import com.charles.nutrisnap.data.ModelVariant
 import com.charles.nutrisnap.data.ThemeMode
 import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.feature.onboarding.DailyGoal
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.installations.FirebaseInstallations
+import com.google.firebase.perf.FirebasePerformance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,13 +26,17 @@ data class SettingsUiState(
     val modelState: ModelState = ModelState.NotDownloaded,
     val goal: DailyGoal? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val crashlyticsEnabled: Boolean = true,
+    val performanceEnabled: Boolean = true,
+    val analyticsEnabled: Boolean = true,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val app: Application,
     private val modelRepository: ModelRepository,
     private val prefs: UserPreferencesRepository,
-) : ViewModel() {
+) : AndroidViewModel(app) {
 
     val state: StateFlow<SettingsUiState> = combine(
         prefs.prefs,
@@ -38,6 +47,9 @@ class SettingsViewModel @Inject constructor(
             modelState = modelState,
             goal = prefs.goal,
             themeMode = prefs.themeMode,
+            crashlyticsEnabled = prefs.crashlyticsEnabled,
+            performanceEnabled = prefs.performanceEnabled,
+            analyticsEnabled = prefs.analyticsEnabled,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -61,5 +73,24 @@ class SettingsViewModel @Inject constructor(
     fun retryDownload() {
         val s = state.value
         modelRepository.retryDownload(s.currentVariant)
+    }
+
+    fun setCrashlyticsEnabled(enabled: Boolean) {
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(enabled)
+        viewModelScope.launch { prefs.setCrashlyticsEnabled(enabled) }
+    }
+
+    fun setPerformanceEnabled(enabled: Boolean) {
+        FirebasePerformance.getInstance().setPerformanceCollectionEnabled(enabled)
+        viewModelScope.launch { prefs.setPerformanceEnabled(enabled) }
+    }
+
+    fun setAnalyticsEnabled(enabled: Boolean) {
+        FirebaseAnalytics.getInstance(app).setAnalyticsCollectionEnabled(enabled)
+        viewModelScope.launch { prefs.setAnalyticsEnabled(enabled) }
+    }
+
+    fun resetFirebaseId() {
+        FirebaseInstallations.getInstance().delete()
     }
 }

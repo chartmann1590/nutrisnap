@@ -23,6 +23,7 @@ import com.charles.nutrisnap.feature.onboarding.OnboardingEvent
 import com.charles.nutrisnap.feature.onboarding.OnboardingScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingViewModel
 import com.charles.nutrisnap.feature.profile.ProfileScreen
+import com.charles.nutrisnap.feature.pip.PipChatScreen
 import com.charles.nutrisnap.feature.scan.ScanResultScreen
 import com.charles.nutrisnap.feature.scan.ScanScreen
 import com.charles.nutrisnap.feature.settings.SettingsScreen
@@ -80,6 +81,7 @@ fun NutriNavHost(
                 onOpenMeal = { mealId -> navController.navigate(Routes.editMeal(mealId)) },
                 onAddMeal = { navController.navigate(Routes.entry("manual")) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenPipChat = { navController.navigate(Routes.PIP_CHAT) },
             )
         }
         composable(Routes.DIARY) { DiaryScreen() }
@@ -145,6 +147,9 @@ fun NutriNavHost(
         }
         composable(Routes.SETTINGS) {
             SettingsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.PIP_CHAT) {
+            PipChatScreen(onBack = { navController.popBackStack() })
         }
     }
 }

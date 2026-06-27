@@ -14,4 +14,10 @@ class Converters {
 
     @TypeConverter
     fun toMealSource(value: String): MealSource = MealSource.valueOf(value)
+
+    @TypeConverter
+    fun fromChatRole(value: ChatRole): String = value.name
+
+    @TypeConverter
+    fun toChatRole(value: String): ChatRole = ChatRole.valueOf(value)
 }
