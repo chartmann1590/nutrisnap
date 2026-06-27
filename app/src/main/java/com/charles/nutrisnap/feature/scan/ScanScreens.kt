@@ -202,7 +202,7 @@ fun ScanScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Pip(size = 110.dp, animated = true)
+                Pip(size = 110.dp, mood = com.charles.nutrisnap.ui.components.PipMood.Thinking, animated = true)
                 Spacer(Modifier.height(20.dp))
                 Text(
                     "Analyzing your food…",

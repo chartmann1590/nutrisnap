@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val localProps = Properties()
@@ -63,6 +65,9 @@ android {
         }
     }
 
+    firebaseCrashlytics {
+        mappingFileUploadEnabled = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -119,6 +124,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
 
@@ -156,6 +162,16 @@ dependencies {
     // be new enough to load the current Gemma 4 .litertlm (multi-signature vision encoder).
     implementation(libs.litertlm)
     implementation(libs.gson)
+
+    // Firebase Spark plan
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.firebase.crashlytics.ndk)
+    implementation(libs.firebase.perf.ktx)
+    implementation(libs.firebase.config.ktx)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.inappmessaging.display.ktx)
 
     // Tests
     testImplementation(libs.junit)

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import com.charles.nutrisnap.BuildConfig
 import com.charles.nutrisnap.data.ModelRepository
 import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
@@ -12,7 +13,10 @@ import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -81,6 +85,14 @@ class LiteRtGemmaEngine @Inject constructor(
         }
 
     override fun isReady(): Boolean = warmedUp
+
+    override suspend fun startChat(systemInstruction: String): ChatSession {
+        val eng = ensureEngine()
+        val conv = eng.createConversation(
+            ConversationConfig(systemInstruction = Contents.of(systemInstruction))
+        )
+        return LiteRtChatSession(conv, mutex)
+    }
 
     suspend fun verifyModel(): Result<Unit> = withContext(Dispatchers.Default) {
         val eng = ensureEngine()
@@ -183,6 +195,33 @@ JSON:"""
                 is Content.Text -> content.text
                 else -> ""
             }
+        }
+    }
+
+    private class LiteRtChatSession(
+        private val conv: Conversation,
+        private val mutex: Mutex,
+    ) : ChatSession {
+
+        override fun sendStreaming(userText: String): Flow<String> = flow {
+            mutex.withLock {
+                val sb = StringBuilder()
+                conv.sendMessageAsync(userText).collect { message ->
+                    val delta = message.contents.contents.joinToString(separator = "") { content ->
+                        when (content) {
+                            is Content.Text -> content.text
+                            else -> ""
+                        }
+                    }
+                    sb.append(delta)
+                    emit(sb.toString())
+                }
+            }
+        }.flowOn(Dispatchers.Default)
+
+        override fun close() {
+            runCatching { conv.cancelProcess() }
+            runCatching { conv.close() }
         }
     }
 }

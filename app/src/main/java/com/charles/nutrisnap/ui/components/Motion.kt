@@ -80,12 +80,15 @@ fun AnimatedRing(
 fun StreakFlame(
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
+    intensity: Float = 1f,
 ) {
+    val i = intensity.coerceIn(0f, 1f)
+    val periodMs = (820 - 320 * i).toInt() // hotter streak = faster flicker
     val infiniteTransition = rememberInfiniteTransition(label = "flame")
     val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f,
+        initialValue = 0.55f + 0.1f * i,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
+        animationSpec = infiniteRepeatable(tween(periodMs), RepeatMode.Reverse),
         label = "pulse",
     )
 
@@ -110,7 +113,7 @@ fun StreakFlame(
             cubicTo(w * 0.4f, h * 0.4f, w * 0.48f, h * 0.3f, w * 0.5f, h * 0.15f)
             close()
         }
-        drawPath(glow, Color.White.copy(alpha = alpha * 0.4f))
+        drawPath(glow, Color.White.copy(alpha = alpha * (0.4f + 0.3f * i)))
     }
 }
 

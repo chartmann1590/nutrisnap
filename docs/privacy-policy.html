@@ -35,7 +35,7 @@
 <div class="legal-content">
   <a href="index.html" class="back-link">&larr; Back to NutriSnap</a>
   <h1>Privacy Policy</h1>
-  <p class="meta">Last updated: June 27, 2026 &middot; Version 1.0 &middot; App version: 0.2.0</p>
+  <p class="meta">Last updated: June 27, 2026 &middot; Version 1.1 &middot; App version: 0.2.0</p>
 
   <h2>1. Who We Are</h2>
   <p>
@@ -52,7 +52,10 @@
   <h2>3. Data We Collect — App</h2>
   <p>
     NutriSnap is designed to be <strong>private by default</strong>. We collect the absolute minimum necessary
-    for the app to function — and everything stays on your device.
+    for the app to function — and the vast majority of your data stays on your device. A limited set of
+    <strong>anonymized diagnostic signals</strong> (crash reports, performance metrics, and anonymised usage
+    events) is transmitted to <strong>Firebase (Google LLC)</strong> for app improvement purposes. See
+    <a href="#third-party">Section 5</a> for exactly what is and is not included.
   </p>
 
   <h3>3.1 Camera &amp; Photo Data</h3>
@@ -75,8 +78,8 @@
   <ul>
     <li><strong>CAMERA</strong> — Used solely for taking photos of food for AI analysis. No images are transmitted.</li>
     <li><strong>POST_NOTIFICATIONS</strong> — Used to show download progress when the AI model is being downloaded (one-time, optional).</li>
-    <li><strong>INTERNET</strong> — Used only for the optional one-time download of the Gemma 4 AI model from HuggingFace. No other network access occurs.</li>
-    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download.</li>
+    <li><strong>INTERNET</strong> — Used for the optional one-time download of the Gemma 4 AI model from HuggingFace, and for communicating with Firebase services (crash reporting, performance monitoring, analytics, remote config, and potential push notifications).</li>
+    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download and Firebase operations.</li>
   </ul>
 
   <h3>3.4 Barcode Scanning</h3>
@@ -93,6 +96,34 @@
     update to provide stronger privacy guarantees.
   </p>
 
+  <h3>3.6 Diagnostic &amp; Crash Reports (Firebase)</h3>
+  <p>
+    Starting with version 0.2.0, NutriSnap integrates with <strong>Google Firebase</strong> (Spark plan) to
+    help improve app stability and performance. The following data is collected and transmitted to Firebase
+    servers:
+  </p>
+  <ul>
+    <li><strong>Crash &amp; ANR reports</strong> (via Firebase Crashlytics) — stack traces, device model, OS
+      version, app version, and a resettable Firebase Installation ID. No crash data is ever tied to your
+      identity.</li>
+    <li><strong>Performance metrics</strong> (via Firebase Performance Monitoring) — app startup time, screen
+      rendering time, and network request timing. Aggregate, not personally identifying.</li>
+    <li><strong>Analytics events</strong> (via Google Analytics for Firebase) — anonymised counts of feature
+      usage (e.g., "scan started", "onboarding completed"). <strong>Not</strong> used for advertising or
+      cross-app tracking.</li>
+    <li><strong>Configuration fetches</strong> (via Firebase Remote Config) — an anonymous request to download
+      in-app feature flags. Contains no personal data.</li>
+  </ul>
+  <p>
+    <strong>What is NOT sent to Firebase:</strong> Your food photos, meal entries, weight logs, calorie goals,
+    barcode scans, or any other personal health information stays on your device. Gemma AI conversations remain
+    on-device. Firebase receives only the diagnostic signals listed above.
+  </p>
+  <p>
+    You can disable crash, performance, and analytics collection at any time via <strong>Settings → Privacy
+    &amp; Diagnostics</strong> in the App, or by uninstalling.
+  </p>
+
   <h2>4. Data We Collect — Website</h2>
   <p>
     The NutriSnap website (this site) is a <strong>static site</strong> hosted on GitHub Pages.
@@ -106,7 +137,7 @@
     Privacy Statement</a> governs that data. We do not have access to those logs.
   </p>
 
-  <h2>5. Third-Party Services</h2>
+  <h2 id="third-party">5. Third-Party Services</h2>
   <p>NutriSnap uses the following third-party components, all of which operate on-device or are downloaded once:</p>
   <ul>
     <li><strong>Gemma 4 Model</strong> (Google LLC) — On-device AI model for food recognition. Downloaded from HuggingFace under the Gemma license. No data is sent to Google.</li>
@@ -114,18 +145,56 @@
     <li><strong>ML Kit Barcode Scanning</strong> (Google LLC) — On-device barcode reader. No network calls.</li>
     <li><strong>HuggingFace</strong> — Hosts the Gemma 4 model file for download. The download is optional, one-time, and direct from HuggingFace's servers.</li>
     <li><strong>OkHttp</strong> (Square, Inc.) — HTTP client used for the model download. Apache 2.0 license.</li>
+    <li><strong>Firebase (Google LLC)</strong> — Collection of cloud services used under the
+      <strong>Spark (free) plan</strong>. Firebase acts as a sub-processor on Google Cloud infrastructure.
+      The following Firebase products are integrated into NutriSnap:
+      <ul>
+        <li><strong>Crashlytics</strong> — Anonymized crash and ANR reports (stack traces, device model,
+          OS version, app version, a resettable Firebase Installation ID).</li>
+        <li><strong>Performance Monitoring</strong> — Aggregate runtime metrics (startup time, screen
+          rendering, network timing).</li>
+        <li><strong>Google Analytics for Firebase</strong> — Anonymized usage events for product
+          improvement. <strong>Not</strong> used for advertising, remarketing, or cross-app tracking.</li>
+        <li><strong>Remote Config</strong> — Downloads feature-flag values from Firebase servers at app
+          launch. Fetch contains no user content.</li>
+        <li><strong>Cloud Messaging (FCM)</strong> — If push notifications are ever enabled, a device
+          registration token is generated to receive them. No health or food data is transmitted.</li>
+        <li><strong>In-App Messaging</strong> — Displays guidance overlays; impression data is reported
+          back for campaign analytics. No personal data is involved.</li>
+        <li><strong>App Distribution</strong> — Pre-release builds are shared with designated testers.
+          Tester email addresses are visible to the developer solely for distribution purposes.</li>
+      </ul>
+      Firebase uses a <strong>resettable Installation ID</strong> (not Android ID, IMEI, or Advertising ID)
+      to correlate crash/analytics/performance data across sessions. You may reset this ID at any time in
+      Settings → Privacy &amp; Diagnostics.
+    </li>
   </ul>
 
-  <h2>6. No Analytics, No Ads, No Tracking</h2>
+  <h2>6. Limited Diagnostics, No Ads, No Food-Data Tracking</h2>
   <p>
-    NutriSnap contains <strong>no analytics SDKs, no crash reporting SDKs, no advertising SDKs, and no third-party
-    tracking of any kind</strong>. We have no interest in your data. We have no way to access your data even if we wanted to.
+    NutriSnap now integrates <strong>Firebase Crashlytics, Performance Monitoring, and Google Analytics for
+    Firebase</strong> solely for the purpose of improving app stability and understanding how users interact
+    with the App. These services collect only the anonymized diagnostic signals described in
+    <a href="#third-party">Section 5</a>.
+  </p>
+  <p>
+    <strong>What remains true from day one:</strong>
+  </p>
+  <ul>
+    <li><strong>No advertising SDKs</strong> — We do not show ads, serve ads, or integrate any ad network SDK.</li>
+    <li><strong>No Facebook / Meta SDKs</strong> — No cross-app tracking or social plugins.</li>
+    <li><strong>No Advertising ID / AAID collection</strong> — We never read or share the Android Advertising ID.</li>
+    <li><strong>No sale of data</strong> — We do not sell, rent, or share any user data with third parties for monetary gain.</li>
+    <li><strong>Food photos, meal entries, weight logs, and goal data</strong> — These never leave your device.</li>
+  </ul>
+  <p>
     The App is free with no subscriptions and no in-app purchases.
   </p>
 
   <h2>7. Data Retention &amp; Deletion</h2>
   <p>
-    All data is stored locally on your device. To delete your data:
+    <strong>Local data (food, weight, goals):</strong> All personal tracking data is stored locally on your
+    device. To delete it:
   </p>
   <ul>
     <li><strong>Individual entries:</strong> Edit or delete meal entries from the Diary or Dashboard screens.</li>
@@ -133,9 +202,24 @@
     <li><strong>Export your data:</strong> Use the Settings &rarr; Export Data feature (available in-app) to save a copy before deleting.</li>
   </ul>
   <p>
-    Since we have no servers, there is nothing for us to delete on our end. Uninstalling the App removes all locally
-    stored data.
+    Since we have no servers hosting your personal data, there is nothing for us to delete on our end. Uninstalling
+    the App removes all locally stored data.
   </p>
+  <p>
+    <strong>Firebase diagnostic data:</strong>
+  </p>
+  <ul>
+    <li><strong>Crashlytics</strong> — Crash reports are retained for approximately 90 days, then automatically
+      purged.</li>
+    <li><strong>Performance Monitoring &amp; Analytics</strong> — Retention defaults to approximately 14 months
+      (Google's standard policy for non-advertising Google Analytics data).</li>
+    <li><strong>Reset Installation ID:</strong> You can reset your Firebase Installation ID at any time from
+      within the App (Settings &rarr; Privacy &amp; Diagnostics) or by uninstalling and reinstalling the App.
+      Resetting the ID disassociates future diagnostic data from past reports.</li>
+    <li><strong>Request deletion:</strong> To request deletion of all past Firebase diagnostic data tied to
+      your Installation ID, email <strong>nutrisnap@charleshartmann.com</strong>. I will action the request
+      within 30 days via the Firebase console.</li>
+  </ul>
 
   <h2>8. Children's Privacy</h2>
   <p>
@@ -157,7 +241,8 @@
   <ul>
     <li><strong>Access</strong> your data — Use the App's Export feature.</li>
     <li><strong>Delete</strong> your data — Uninstall the App or clear app storage.</li>
-    <li><strong>Object to processing</strong> — Since all processing is on-device and opt-in (you choose when to scan), you control everything.</li>
+    <li><strong>Object to processing</strong> — Since all personal processing is on-device and opt-in (you choose when to scan), you control everything.</li>
+    <li><strong>Opt out of crash/analytics collection</strong> — Toggle Crashlytics, Performance, and Analytics collection off in <strong>Settings → Privacy &amp; Diagnostics</strong>, or uninstall the App.</li>
   </ul>
   <p>
     To exercise these rights, contact <strong>nutrisnap@charleshartmann.com</strong>. We will respond within 30 days.

@@ -31,3 +31,10 @@
 -keep class com.google.gson.** { *; }
 -dontwarn com.google.gson.**
 -keepattributes Signature, *Annotation*, EnclosingMethod
+
+# Firebase (Crashlytics, Performance, Analytics, Remote Config, FCM, In-App Messaging)
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
+-keepattributes SourceFile,LineNumberTable
+-keep public class * extends java.lang.Exception
