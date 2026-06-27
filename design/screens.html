@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NutriSnap — Remaining Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cream:#FFF6EC;--cream-2:#FFFDF9;--ink:#3A2A21;--ink-soft:#8A776B;
+    --mango:#FF9F1C;--mango-deep:#F4860A;--berry:#FF5D73;--mint:#2EC4A6;--grape:#7C5CFC;--butter:#FFD66B;--sky:#5BC0EB;
+    --track:#F0E4D6;--r:24px;
+    --shadow:0 10px 24px -14px rgba(58,42,33,.30);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;color:var(--ink);
+    background:radial-gradient(1000px 500px at 10% -8%,#FFE9C7 0%,transparent 55%),radial-gradient(800px 460px at 100% 0%,#FFE0E5 0%,transparent 50%),var(--cream);
+    padding:44px 24px 80px;}
+  h1{font-family:'Fredoka';font-weight:700;font-size:34px;}
+  h1 span{color:var(--mango-deep);}
+  .sub{color:var(--ink-soft);font-weight:700;margin:4px 0 30px;}
+  .phones{display:flex;gap:38px;flex-wrap:wrap;justify-content:center;}
+  .phone{width:300px;height:640px;border-radius:46px;flex:none;position:relative;background:var(--cream);padding:14px;
+    box-shadow:0 40px 70px -30px rgba(58,42,33,.5),inset 0 0 0 6px #2a1f19,inset 0 0 0 10px #4a382d;}
+  .screen{position:absolute;inset:14px;border-radius:34px;overflow:hidden;background:var(--cream);}
+  .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#2a1f19;border-radius:0 0 18px 18px;z-index:30;}
+  .label{text-align:center;font-family:'Fredoka';font-weight:600;color:var(--ink-soft);margin-top:14px;}
+  .pad{padding:54px 20px 20px;}
+  .h2{font-family:'Fredoka';font-weight:600;font-size:23px;}
+  .muted{color:var(--ink-soft);font-weight:700;font-size:13px;}
+  .progress{height:8px;border-radius:8px;background:var(--track);overflow:hidden;margin:6px 0 18px;}
+  .progress i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--mango),var(--berry));}
+  .chips{display:flex;gap:10px;margin:10px 0;}
+  .chip{flex:1;border-radius:18px;padding:16px;text-align:center;font-family:'Fredoka';font-weight:600;background:var(--cream-2);box-shadow:var(--shadow);border:2px solid transparent;}
+  .chip.sel{border-color:var(--mango);background:#FFF0D6;color:var(--mango-deep);}
+  .field{background:var(--cream-2);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);display:flex;align-items:center;margin:8px 0;}
+  .field .lab{font-weight:800;font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;}
+  .field .val{margin-left:auto;font-family:'Fredoka';font-weight:600;font-size:18px;}
+  .field .unit{margin-left:8px;background:#FFF0D6;color:var(--mango-deep);border-radius:10px;padding:4px 9px;font-weight:800;font-size:12px;}
+  .opt{display:flex;align-items:center;gap:12px;background:var(--cream-2);border-radius:16px;padding:13px 14px;box-shadow:var(--shadow);margin:8px 0;border:2px solid transparent;font-weight:800;font-size:14px;}
+  .opt.sel{border-color:var(--mint);background:#E2F7F1;}
+  .opt .em{font-size:22px;}
+  .pillrow{display:flex;gap:8px;margin:10px 0;}
+  .gpill{flex:1;text-align:center;border-radius:50px;padding:12px;font-family:'Fredoka';font-weight:600;background:var(--cream-2);box-shadow:var(--shadow);font-size:14px;}
+  .gpill.sel{background:var(--mango);color:#fff;box-shadow:0 6px 0 0 var(--mango-deep);}
+  .cta{position:absolute;left:20px;right:20px;bottom:22px;height:56px;border-radius:20px;background:var(--mango);color:#fff;font-family:'Fredoka';font-weight:600;font-size:18px;display:grid;place-items:center;box-shadow:0 8px 0 0 var(--mango-deep);}
+
+  /* camera */
+  .cam{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#5a4a3e,#2a211b);}
+  .vf{position:absolute;inset:60px 36px 200px;border:3px solid rgba(255,255,255,.85);border-radius:28px;}
+  .vf::before,.vf::after{content:"";position:absolute;width:26px;height:26px;border:4px solid var(--mango);}
+  .vf::before{top:-3px;left:-3px;border-right:0;border-bottom:0;border-radius:14px 0 0 0;}
+  .vf::after{bottom:-3px;right:-3px;border-left:0;border-top:0;border-radius:0 0 14px 0;}
+  .camfood{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%);font-size:88px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4));}
+  .camhint{position:absolute;top:30px;left:0;right:0;text-align:center;color:#fff;font-family:'Fredoka';font-weight:500;font-size:15px;text-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .camrow{position:absolute;bottom:42px;left:0;right:0;display:flex;align-items:center;justify-content:space-around;}
+  .shutter{width:74px;height:74px;border-radius:50%;background:#fff;border:6px solid rgba(255,255,255,.4);}
+  .camicon{width:50px;height:50px;border-radius:16px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:22px;}
+  .analyzing{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);background:rgba(58,42,33,.82);color:#fff;font-family:'Fredoka';font-weight:500;font-size:13px;padding:9px 16px;border-radius:20px;display:flex;gap:8px;align-items:center;}
+
+  /* generic list rows */
+  .sec{font-family:'Fredoka';font-weight:600;font-size:15px;margin:14px 0 6px;}
+  .row{display:flex;align-items:center;gap:12px;background:var(--cream-2);border-radius:16px;padding:11px 13px;box-shadow:var(--shadow);margin:8px 0;}
+  .row .em{width:40px;height:40px;border-radius:12px;background:#FFF0D6;display:grid;place-items:center;font-size:20px;}
+  .row .nm{font-family:'Fredoka';font-weight:600;font-size:14px;}
+  .row .mk{color:var(--ink-soft);font-weight:700;font-size:11px;}
+  .row .kc{margin-left:auto;font-family:'Fredoka';font-weight:600;color:var(--mango-deep);}
+  .toggle{margin-left:auto;width:46px;height:26px;border-radius:50px;background:var(--mango);position:relative;}
+  .toggle i{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;}
+
+  /* trends bars */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:130px;padding:10px 4px 0;}
+  .bars .b{flex:1;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,var(--mango),var(--butter));}
+  .daylab{display:flex;gap:10px;padding:6px 4px;}
+  .daylab span{flex:1;text-align:center;font-weight:800;font-size:10px;color:var(--ink-soft);}
+  .statgrid{display:flex;gap:10px;margin-top:12px;}
+  .stat{flex:1;border-radius:18px;padding:14px;box-shadow:var(--shadow);color:#fff;}
+  .stat b{font-family:'Fredoka';font-weight:600;font-size:22px;display:block;}
+  .stat small{font-weight:800;font-size:10px;opacity:.9;text-transform:uppercase;letter-spacing:1px;}
+  .search{background:var(--cream-2);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center;color:var(--ink-soft);font-weight:700;}
+  .modelcard{background:linear-gradient(160deg,#fff,#FFF0E0);border-radius:22px;padding:16px;box-shadow:var(--shadow);}
+  .seg{display:flex;background:var(--track);border-radius:14px;padding:4px;margin-top:10px;}
+  .seg div{flex:1;text-align:center;padding:9px;border-radius:11px;font-weight:800;font-size:13px;color:var(--ink-soft);}
+  .seg div.on{background:#fff;color:var(--mango-deep);box-shadow:var(--shadow);}
+</style>
+</head>
+<body>
+  <h1>Nutri<span>Snap</span> — remaining screens</h1>
+  <div class="sub">Same “Snackable” system as the north star. These are the build targets for Compose.</div>
+
+  <div class="phones">
+
+    <!-- ONBOARDING QUESTIONNAIRE -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="pad">
+        <div class="muted">Step 3 of 5</div>
+        <div class="progress"><i style="width:60%"></i></div>
+        <div class="h2">Let's set your goal 🎯</div>
+        <div class="muted" style="margin-top:4px;">A few quick things to personalize your calories.</div>
+
+        <div style="margin-top:16px;" class="muted">BIOLOGICAL SEX</div>
+        <div class="chips"><div class="chip sel">♂ Male</div><div class="chip">♀ Female</div></div>
+
+        <div class="field"><span class="lab">Age</span><span class="val">28</span></div>
+        <div class="field"><span class="lab">Height</span><span class="val">178</span><span class="unit">cm</span></div>
+        <div class="field"><span class="lab">Weight</span><span class="val">74</span><span class="unit">kg</span></div>
+
+        <div class="muted" style="margin-top:8px;">ACTIVITY</div>
+        <div class="opt"><span class="em">🚶</span>Lightly active</div>
+        <div class="opt sel"><span class="em">🏃</span>Active</div>
+
+        <div class="muted" style="margin-top:8px;">GOAL</div>
+        <div class="pillrow"><div class="gpill">Lose</div><div class="gpill sel">Maintain</div><div class="gpill">Gain</div></div>
+      </div>
+      <div class="cta">Continue →</div>
+    </div></div><div class="label">Onboarding · goal questionnaire</div></div>
+
+    <!-- CAMERA -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="cam">
+        <div class="camhint">Point at your plate 🍽️</div>
+        <div class="vf"></div>
+        <div class="camfood">🥗</div>
+        <div class="analyzing">✨ Analyzing on-device…</div>
+        <div class="camrow">
+          <div class="camicon">🖼️</div>
+          <div class="shutter"></div>
+          <div class="camicon">🔦</div>
+        </div>
+      </div>
+    </div></div><div class="label">Camera capture + analyzing</div></div>
+
+    <!-- MANUAL + BARCODE ENTRY -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="pad">
+        <div class="h2">Add it by hand ✍️</div>
+        <div class="muted" style="margin:4px 0 14px;">Describe a food — Pip estimates the rest.</div>
+        <div class="search">🔎 “two scrambled eggs &amp; toast”</div>
+
+        <div class="seg"><div class="on">Describe</div><div>Barcode</div></div>
+
+        <div class="sec">Pip's estimate</div>
+        <div class="row"><div class="em">🍳</div><div><div class="nm">Scrambled eggs</div><div class="mk">2 large · 180 kcal</div></div><div class="kc">180</div></div>
+        <div class="row"><div class="em">🍞</div><div><div class="nm">Buttered toast</div><div class="mk">1 slice · 120 kcal</div></div><div class="kc">120</div></div>
+
+        <div class="sec">Recent</div>
+        <div class="row"><div class="em">☕</div><div><div class="nm">Flat white</div><div class="mk">Tap to re-add</div></div><div class="kc">90</div></div>
+      </div>
+      <div class="cta">Add 300 kcal to diary</div>
+    </div></div><div class="label">Manual entry + barcode</div></div>
+
+    <!-- DIARY -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="pad">
+        <div class="h2">Your diary 📖</div>
+        <div class="muted" style="margin:4px 0 8px;">Tuesday, 24 Jun · 1,420 / 2,600 kcal</div>
+        <div class="progress"><i style="width:55%"></i></div>
+
+        <div class="sec">Breakfast · 320</div>
+        <div class="row"><div class="em">🥑</div><div><div class="nm">Avocado toast</div><div class="mk">9:12</div></div><div class="kc">320</div></div>
+        <div class="sec">Lunch · 540</div>
+        <div class="row"><div class="em">🍜</div><div><div class="nm">Ramen bowl</div><div class="mk">13:40</div></div><div class="kc">540</div></div>
+        <div class="sec">Snacks · 180</div>
+        <div class="row"><div class="em">🍓</div><div><div class="nm">Berry smoothie</div><div class="mk">16:05</div></div><div class="kc">180</div></div>
+        <div class="row"><div class="em">🍩</div><div><div class="nm">Donut</div><div class="mk">tap to log</div></div><div class="kc">+</div></div>
+      </div>
+    </div></div><div class="label">Diary (day log)</div></div>
+
+    <!-- TRENDS -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="pad">
+        <div class="h2">Trends 📈</div>
+        <div class="muted" style="margin:4px 0 10px;">This week · avg 2,180 kcal</div>
+        <div class="bars">
+          <div class="b" style="height:60%"></div><div class="b" style="height:80%"></div>
+          <div class="b" style="height:48%"></div><div class="b" style="height:92%"></div>
+          <div class="b" style="height:70%"></div><div class="b" style="height:55%"></div>
+          <div class="b" style="height:40%"></div>
+        </div>
+        <div class="daylab"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+        <div class="statgrid">
+          <div class="stat" style="background:var(--mango)"><b>🔥 12</b><small>Day streak</small></div>
+          <div class="stat" style="background:var(--mint)"><b>73.4</b><small>kg · -0.6</small></div>
+        </div>
+        <div class="sec">Weight</div>
+        <div class="row"><div class="em">⚖️</div><div><div class="nm">Log today's weight</div><div class="mk">Last: 74.0 kg</div></div><div class="kc">+</div></div>
+      </div>
+    </div></div><div class="label">Trends · streak · weight</div></div>
+
+    <!-- SETTINGS -->
+    <div><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="pad">
+        <div class="h2">Settings ⚙️</div>
+        <div class="sec">On-device AI</div>
+        <div class="modelcard">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:26px;">🧠</div>
+            <div><div class="nm" style="font-family:'Fredoka';font-weight:600;">Gemma 4 · E2B</div><div class="mk">Ready · 3.0 GB · offline</div></div>
+            <div style="margin-left:auto;background:#E2F7F1;color:#1f9d85;font-weight:800;font-size:11px;padding:5px 9px;border-radius:10px;">Active</div>
+          </div>
+          <div class="seg"><div class="on">E2B · faster</div><div>E4B · sharper</div></div>
+        </div>
+        <div class="sec">Preferences</div>
+        <div class="row"><div class="em">🎯</div><div class="nm">Daily goal · 2,600</div><div class="kc">›</div></div>
+        <div class="row"><div class="em">📏</div><div class="nm">Units · metric</div><div class="kc">›</div></div>
+        <div class="row"><div class="em">🌙</div><div class="nm">Dark mode</div><div class="toggle"><i></i></div></div>
+        <div class="row"><div class="em">🔒</div><div><div class="nm">Privacy</div><div class="mk">Photos never leave device</div></div><div class="kc">›</div></div>
+      </div>
+    </div></div><div class="label">Settings · model management</div></div>
+
+  </div>
+</body>
+</html>

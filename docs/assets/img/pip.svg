@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <defs>
+    <radialGradient id="bodyGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFB347"/>
+      <stop offset="60%" stop-color="#FF9F1C"/>
+      <stop offset="100%" stop-color="#F4860A"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#3A2A21" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <!-- Leaf -->
+  <path d="M100 28 Q112 10 130 14 Q118 22 110 32 Z" fill="#2EC4A6"/>
+  <path d="M100 28 Q90 14 72 18 Q84 26 92 34 Z" fill="#2EC4A6" opacity="0.8"/>
+  <!-- Stem -->
+  <path d="M100 40 L100 28" stroke="#5B8C5A" stroke-width="3" stroke-linecap="round"/>
+  <!-- Body (mango shape) -->
+  <path d="M100 210 C55 210 20 185 20 140 C20 95 50 60 80 52 C90 48 95 46 100 46 C105 46 110 48 120 52 C150 60 180 95 180 140 C180 185 145 210 100 210Z" fill="url(#bodyGrad)" filter="url(#shadow)"/>
+  <!-- Highlight -->
+  <path d="M60 80 Q50 100 52 130" stroke="#FFD699" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <!-- Left eye -->
+  <ellipse cx="78" cy="105" rx="9" ry="11" fill="#3A2A21"/>
+  <ellipse cx="80" cy="102" rx="4" ry="4" fill="white"/>
+  <!-- Right eye -->
+  <ellipse cx="122" cy="105" rx="9" ry="11" fill="#3A2A21"/>
+  <ellipse cx="124" cy="102" rx="4" ry="4" fill="white"/>
+  <!-- Blush left -->
+  <ellipse cx="65" cy="125" rx="14" ry="9" fill="#FF5D73" opacity="0.35"/>
+  <!-- Blush right -->
+  <ellipse cx="135" cy="125" rx="14" ry="9" fill="#FF5D73" opacity="0.35"/>
+  <!-- Mouth -->
+  <path d="M88 130 Q100 145 112 130" stroke="#3A2A21" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Cheek dots -->
+  <circle cx="70" cy="100" r="2" fill="#3A2A21" opacity="0.1"/>
+  <circle cx="130" cy="100" r="2" fill="#3A2A21" opacity="0.1"/>
+</svg>

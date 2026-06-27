@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NutriSnap — Design North Star</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* --- Snackable palette --- */
+    --cream:        #FFF6EC;   /* warm background */
+    --cream-2:      #FFFDF9;   /* card surface */
+    --ink:          #3A2A21;   /* warm near-black text */
+    --ink-soft:     #8A776B;   /* muted text */
+
+    --mango:        #FF9F1C;   /* primary - tangerine/mango */
+    --mango-deep:   #F4860A;
+    --berry:        #FF5D73;   /* accent - berry coral */
+    --berry-deep:   #F23F58;
+    --mint:         #2EC4A6;   /* success / protein-y green */
+    --grape:        #7C5CFC;   /* carbs */
+    --butter:       #FFD66B;   /* fat / highlights */
+    --sky:          #5BC0EB;   /* info */
+
+    --ring-track:   #F0E4D6;
+
+    --r-lg: 34px;
+    --r-md: 24px;
+    --r-sm: 16px;
+    --shadow:  0 14px 30px -12px rgba(244,134,10,.35), 0 6px 12px -8px rgba(58,42,33,.18);
+    --shadow-soft: 0 10px 24px -14px rgba(58,42,33,.30);
+    --pop: 0 6px 0 0 var(--mango-deep);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 12% -8%, #FFE9C7 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #FFE0E5 0%, transparent 50%),
+      var(--cream);
+    min-height:100vh;
+    padding:48px 24px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  /* ---------- Header ---------- */
+  .masthead{display:flex;align-items:center;gap:18px;margin-bottom:8px;}
+  .logo-badge{
+    width:64px;height:64px;border-radius:20px;flex:none;
+    background:linear-gradient(135deg,var(--mango),var(--berry));
+    display:grid;place-items:center;box-shadow:var(--shadow);
+    transform:rotate(-6deg);
+  }
+  .logo-badge svg{width:42px;height:42px;}
+  h1.brand{font-family:'Fredoka';font-weight:700;font-size:46px;letter-spacing:-.5px;line-height:1;}
+  h1.brand span{color:var(--mango-deep);}
+  .tag{color:var(--ink-soft);font-weight:700;margin-top:4px;}
+  .kicker{font-family:'Fredoka';font-weight:600;color:var(--berry-deep);text-transform:uppercase;letter-spacing:2px;font-size:13px;margin:54px 0 16px;}
+
+  /* ---------- Palette ---------- */
+  .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;}
+  .sw{border-radius:var(--r-sm);padding:16px;height:104px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;font-family:'Fredoka';font-weight:600;box-shadow:var(--shadow-soft);}
+  .sw small{display:block;font-family:'Nunito';font-weight:700;opacity:.85;font-size:11px;}
+  .sw.dark{color:var(--ink);}
+
+  /* ---------- Type ---------- */
+  .typecard{background:var(--cream-2);border-radius:var(--r-md);padding:28px 32px;box-shadow:var(--shadow-soft);}
+  .typecard .d1{font-family:'Fredoka';font-weight:700;font-size:40px;letter-spacing:-.5px;}
+  .typecard .d2{font-family:'Fredoka';font-weight:600;font-size:24px;color:var(--mango-deep);margin-top:6px;}
+  .typecard .b{font-size:16px;color:var(--ink-soft);font-weight:600;max-width:560px;margin-top:10px;line-height:1.5;}
+  .typecard .meta{font-family:'Nunito';font-weight:800;letter-spacing:1px;text-transform:uppercase;font-size:12px;color:var(--berry-deep);margin-top:14px;}
+
+  /* ---------- Phone gallery ---------- */
+  .phones{display:flex;gap:40px;flex-wrap:wrap;justify-content:center;}
+  .phone{
+    width:300px;height:640px;border-radius:46px;flex:none;position:relative;
+    background:var(--cream);padding:14px;
+    box-shadow:0 40px 70px -30px rgba(58,42,33,.5), inset 0 0 0 6px #2a1f19, inset 0 0 0 10px #4a382d;
+  }
+  .screen{position:absolute;inset:14px;border-radius:34px;overflow:hidden;background:var(--cream);}
+  .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#2a1f19;border-radius:0 0 18px 18px;z-index:30;}
+  .label{text-align:center;font-family:'Fredoka';font-weight:600;color:var(--ink-soft);margin-top:16px;}
+
+  .stbar{display:flex;justify-content:space-between;padding:14px 22px 0;font-weight:800;font-size:12px;color:var(--ink);}
+  .pad{padding:0 20px;}
+
+  /* dashboard */
+  .greet{display:flex;align-items:center;gap:12px;padding:18px 20px 6px;}
+  .greet .hi{font-family:'Fredoka';font-weight:600;font-size:20px;line-height:1.05;}
+  .greet .sub{color:var(--ink-soft);font-weight:700;font-size:12px;}
+  .streak{margin-left:auto;background:#FFF0D6;color:var(--mango-deep);font-family:'Fredoka';font-weight:600;font-size:13px;padding:7px 12px;border-radius:14px;display:flex;align-items:center;gap:5px;box-shadow:var(--shadow-soft);}
+
+  .ringcard{margin:12px 20px;background:linear-gradient(160deg,#fff,#FFF6EA);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-soft);display:flex;align-items:center;gap:16px;}
+  .kcal-num{font-family:'Fredoka';font-weight:700;font-size:34px;line-height:.9;}
+  .kcal-lab{color:var(--ink-soft);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:1px;}
+  .macros{display:flex;flex-direction:column;gap:9px;flex:1;}
+  .macro{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;}
+  .macro .bar{flex:1;height:9px;border-radius:6px;background:var(--ring-track);overflow:hidden;}
+  .macro .bar i{display:block;height:100%;border-radius:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+
+  .sec-title{font-family:'Fredoka';font-weight:600;font-size:16px;padding:6px 22px 2px;}
+  .meal{display:flex;align-items:center;gap:12px;margin:8px 20px;background:var(--cream-2);border-radius:var(--r-sm);padding:11px 13px;box-shadow:var(--shadow-soft);}
+  .meal .emoji{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:#FFF0D6;flex:none;}
+  .meal .mn{font-family:'Fredoka';font-weight:600;font-size:14px;}
+  .meal .mk{color:var(--ink-soft);font-weight:700;font-size:11px;}
+  .meal .mc{margin-left:auto;font-family:'Fredoka';font-weight:600;color:var(--mango-deep);font-size:14px;}
+
+  /* bottom bar + FAB */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:74px;background:var(--cream-2);border-top:1px solid #F0E4D6;display:flex;justify-content:space-around;align-items:center;padding:0 16px 6px;}
+  .tab{display:grid;place-items:center;gap:3px;color:var(--ink-soft);font-weight:800;font-size:10px;}
+  .tab.on{color:var(--mango-deep);}
+  .tab svg{width:24px;height:24px;}
+  .fab{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,var(--berry),var(--mango));display:grid;place-items:center;box-shadow:0 12px 24px -6px rgba(242,63,88,.6);border:5px solid var(--cream);z-index:20;}
+  .fab svg{width:30px;height:30px;}
+
+  /* scan result */
+  .photo{height:212px;margin:0;background:
+      radial-gradient(circle at 30% 35%,#FFD27A,transparent 45%),
+      radial-gradient(circle at 72% 60%,#FF8FA0,transparent 45%),
+      linear-gradient(150deg,#FFE2B0,#FFC9D2);
+    position:relative;display:grid;place-items:center;}
+  .photo .plate{font-size:96px;filter:drop-shadow(0 10px 14px rgba(0,0,0,.18));}
+  .chip-ai{position:absolute;top:16px;left:16px;background:rgba(58,42,33,.78);color:#fff;font-family:'Fredoka';font-weight:500;font-size:12px;padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);}
+  .sheet{margin-top:-26px;background:var(--cream);border-radius:30px 30px 0 0;padding:20px 20px 0;position:relative;}
+  .grab{width:42px;height:5px;border-radius:5px;background:#E6D6C4;margin:0 auto 14px;}
+  .foodname{font-family:'Fredoka';font-weight:600;font-size:23px;display:flex;align-items:center;gap:8px;}
+  .conf{margin-left:auto;font-family:'Nunito';font-weight:800;font-size:11px;color:var(--mint);background:#E2F7F1;padding:5px 9px;border-radius:10px;}
+  .portion{color:var(--ink-soft);font-weight:700;font-size:13px;margin-top:2px;}
+  .bigk{display:flex;align-items:baseline;gap:8px;margin:16px 0 4px;}
+  .bigk b{font-family:'Fredoka';font-weight:700;font-size:44px;}
+  .mtiles{display:flex;gap:10px;margin-top:14px;}
+  .mtile{flex:1;border-radius:var(--r-sm);padding:12px;text-align:center;color:#fff;box-shadow:var(--shadow-soft);}
+  .mtile b{font-family:'Fredoka';font-weight:600;font-size:20px;display:block;}
+  .mtile small{font-weight:800;font-size:10px;opacity:.9;text-transform:uppercase;letter-spacing:1px;}
+  .cta{margin:18px 0 0;height:56px;border-radius:20px;background:var(--mango);color:#fff;font-family:'Fredoka';font-weight:600;font-size:18px;display:grid;place-items:center;box-shadow:0 8px 0 0 var(--mango-deep);}
+  .cta.ghost{background:transparent;color:var(--ink-soft);box-shadow:none;height:46px;font-size:15px;margin-top:6px;}
+
+  /* download screen */
+  .dl{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;text-align:center;gap:6px;}
+  .dl h2{font-family:'Fredoka';font-weight:600;font-size:25px;margin-top:10px;}
+  .dl p{color:var(--ink-soft);font-weight:700;font-size:14px;line-height:1.5;}
+  .dlbar{width:100%;height:16px;border-radius:10px;background:var(--ring-track);overflow:hidden;margin-top:22px;box-shadow:inset 0 2px 4px rgba(0,0,0,.06);}
+  .dlbar i{display:block;height:100%;width:64%;border-radius:10px;background:linear-gradient(90deg,var(--mango),var(--berry));}
+  .dlmeta{display:flex;justify-content:space-between;width:100%;font-weight:800;font-size:12px;color:var(--ink-soft);margin-top:8px;}
+  .wifi{margin-top:18px;background:#E9F6FC;color:#2792bd;font-weight:800;font-size:12px;padding:8px 14px;border-radius:14px;display:flex;gap:7px;align-items:center;}
+
+  /* mascot */
+  .pip{width:128px;height:128px;animation:bob 2.6s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+
+  .compo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+  .compcard{background:var(--cream-2);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-soft);display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
+  .btn{height:48px;padding:0 22px;border-radius:16px;font-family:'Fredoka';font-weight:600;font-size:15px;display:inline-grid;place-items:center;}
+  .btn.p{background:var(--mango);color:#fff;box-shadow:0 6px 0 0 var(--mango-deep);}
+  .btn.s{background:#FFE6D0;color:var(--mango-deep);}
+  .pill{padding:8px 14px;border-radius:14px;background:#FFF0D6;color:var(--mango-deep);font-weight:800;font-size:12px;}
+  .footer{text-align:center;color:var(--ink-soft);font-weight:700;margin-top:60px;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="logo-badge">
+      <!-- camera + leaf mark -->
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect x="6" y="14" width="36" height="26" rx="9" fill="#fff"/>
+        <circle cx="24" cy="27" r="8" fill="#FF9F1C"/>
+        <circle cx="24" cy="27" r="3.4" fill="#fff"/>
+        <rect x="18" y="9" width="12" height="7" rx="3" fill="#fff"/>
+        <path d="M34 10c4-3 9-2 9-2s0 5-4 7-7 1-7 1 0-4 2-6z" fill="#2EC4A6"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="brand">Nutri<span>Snap</span></h1>
+      <div class="tag">Snap a meal → on-device AI counts it. Private. Offline. Fun.</div>
+    </div>
+  </div>
+
+  <!-- PHONES -->
+  <div class="kicker">The app — key screens</div>
+  <div class="phones">
+
+    <!-- DASHBOARD -->
+    <div>
+    <div class="phone"><div class="notch"></div><div class="screen">
+      <div class="stbar"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="greet">
+        <div class="hi">Hey, Charlie! 👋<div class="sub">Tuesday · Day 12 streak</div></div>
+        <div class="streak">🔥 12</div>
+      </div>
+      <div class="ringcard">
+        <svg width="92" height="92" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#F0E4D6" stroke-width="12"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#FF9F1C" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="264" stroke-dashoffset="92" transform="rotate(-90 50 50)"/>
+          <text x="50" y="46" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="22" fill="#3A2A21">1,180</text>
+          <text x="50" y="62" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="9" fill="#8A776B">LEFT</text>
+        </svg>
+        <div class="macros">
+          <div class="macro"><span class="dot" style="background:var(--mint)"></span>Protein<span class="bar"><i style="width:70%;background:var(--mint)"></i></span>62g</div>
+          <div class="macro"><span class="dot" style="background:var(--grape)"></span>Carbs<span class="bar"><i style="width:48%;background:var(--grape)"></i></span>140g</div>
+          <div class="macro"><span class="dot" style="background:var(--butter)"></span>Fat<span class="bar"><i style="width:55%;background:var(--butter)"></i></span>44g</div>
+        </div>
+      </div>
+      <div class="sec-title">Today's meals</div>
+      <div class="meal"><div class="emoji">🥑</div><div><div class="mn">Avocado toast</div><div class="mk">Breakfast · 9:12</div></div><div class="mc">320</div></div>
+      <div class="meal"><div class="emoji">🍜</div><div><div class="mn">Ramen bowl</div><div class="mk">Lunch · 13:40</div></div><div class="mc">540</div></div>
+      <div class="meal"><div class="emoji">🍓</div><div><div class="mn">Berry smoothie</div><div class="mk">Snack · 16:05</div></div><div class="mc">180</div></div>
+
+      <div class="fab"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8a3 3 0 013-3h1l1.2-1.6A2 2 0 019.8 2.6h4.4a2 2 0 011.6.8L17 5h1a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3V8z" fill="#fff"/><circle cx="12" cy="12.5" r="4.2" fill="#FF5D73"/><circle cx="12" cy="12.5" r="1.8" fill="#fff"/></svg></div>
+      <div class="tabbar">
+        <div class="tab on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 11l8-7 8 7v8a2 2 0 01-2 2h-3v-6H9v6H6a2 2 0 01-2-2z"/></svg>Home</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v3H4zM4 11h16v3H4zM4 17h10v3H4z"/></svg>Diary</div>
+        <div style="width:54px"></div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19V9h4v10zm6 0V4h4v15zm6 0v-7h4v7z"/></svg>Trends</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6z"/></svg>Me</div>
+      </div>
+    </div></div>
+    <div class="label">Home dashboard</div>
+    </div>
+
+    <!-- SCAN RESULT -->
+    <div>
+    <div class="phone"><div class="notch"></div><div class="screen">
+      <div class="photo">
+        <div class="chip-ai">✨ Analyzed on-device</div>
+        <div class="plate">🍝</div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="foodname">Creamy pasta <span class="conf">94% sure</span></div>
+        <div class="portion">≈ 1 plate · 320 g</div>
+        <div class="bigk"><b>610</b><span style="font-weight:800;color:var(--ink-soft)">kcal · tap to edit</span></div>
+        <div class="mtiles">
+          <div class="mtile" style="background:var(--mint)"><b>22g</b><small>Protein</small></div>
+          <div class="mtile" style="background:var(--grape)"><b>74g</b><small>Carbs</small></div>
+          <div class="mtile" style="background:#E0A93B"><b>26g</b><small>Fat</small></div>
+        </div>
+        <div class="cta">Add to diary 🍽️</div>
+        <div class="cta ghost">Edit details</div>
+      </div>
+    </div></div>
+    <div class="label">AI scan result (editable)</div>
+    </div>
+
+    <!-- MODEL DOWNLOAD -->
+    <div>
+    <div class="phone"><div class="notch"></div><div class="screen">
+      <div class="dl">
+        <!-- Pip the mascot -->
+        <svg class="pip" viewBox="0 0 120 120">
+          <ellipse cx="60" cy="108" rx="30" ry="6" fill="#000" opacity=".08"/>
+          <path d="M60 16c24 0 40 18 40 44 0 28-18 46-40 46S20 88 20 60c0-26 16-44 40-44z" fill="#FF9F1C"/>
+          <path d="M60 16c10 0 18 3 25 9-6 30-34 52-58 50-5-8-7-16-7-25C20 34 36 16 60 16z" fill="#FFB347" opacity=".55"/>
+          <path d="M62 16c2-7 9-11 9-11s2 8-2 12-9 4-9 4 0-3 2-5z" fill="#2EC4A6"/>
+          <circle cx="47" cy="60" r="6.5" fill="#fff"/><circle cx="48.5" cy="61.5" r="3.3" fill="#3A2A21"/>
+          <circle cx="74" cy="60" r="6.5" fill="#fff"/><circle cx="75.5" cy="61.5" r="3.3" fill="#3A2A21"/>
+          <circle cx="40" cy="72" r="5" fill="#FF5D73" opacity=".55"/>
+          <circle cx="82" cy="72" r="5" fill="#FF5D73" opacity=".55"/>
+          <path d="M52 74c3 4 13 4 16 0" stroke="#3A2A21" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h2>Teaching your phone<br/>to see food…</h2>
+        <p>Downloading the Gemma&nbsp;4 brain so NutriSnap works fully offline — no photos ever leave your phone.</p>
+        <div class="dlbar"><i></i></div>
+        <div class="dlmeta"><span>64%</span><span>1.9 / 3.0 GB</span></div>
+        <div class="wifi">📶 On Wi-Fi · safe to download</div>
+      </div>
+    </div></div>
+    <div class="label">Onboarding · model download</div>
+    </div>
+
+  </div>
+
+  <!-- PALETTE -->
+  <div class="kicker">Palette — “Snackable”</div>
+  <div class="swatches">
+    <div class="sw" style="background:#FF9F1C">Mango<small>#FF9F1C · primary</small></div>
+    <div class="sw" style="background:#FF5D73">Berry<small>#FF5D73 · accent</small></div>
+    <div class="sw" style="background:#2EC4A6">Mint<small>#2EC4A6 · protein</small></div>
+    <div class="sw" style="background:#7C5CFC">Grape<small>#7C5CFC · carbs</small></div>
+    <div class="sw dark" style="background:#FFD66B">Butter<small>#FFD66B · fat</small></div>
+    <div class="sw dark" style="background:#FFF6EC">Cream<small>#FFF6EC · bg</small></div>
+    <div class="sw" style="background:#3A2A21">Cocoa<small>#3A2A21 · text</small></div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="kicker">Type — Fredoka (display) · Nunito (body)</div>
+  <div class="typecard">
+    <div class="d1">Snap it. Count it. 🍔</div>
+    <div class="d2">610 kcal · 22g protein</div>
+    <div class="b">Body copy is set in Nunito — rounded, warm and friendly, highly legible at small sizes for meal lists, macros and helper text throughout the app.</div>
+    <div class="meta">Labels · uppercase · tracked</div>
+  </div>
+
+  <!-- COMPONENTS -->
+  <div class="kicker">Core components</div>
+  <div class="compo">
+    <div class="compcard"><span class="btn p">Add to diary</span><span class="btn s">Edit</span></div>
+    <div class="compcard">
+      <span class="pill">🔥 12 day streak</span>
+      <span class="pill" style="background:#E2F7F1;color:#1f9d85">94% sure</span>
+    </div>
+    <div class="compcard" style="align-items:center;">
+      <svg width="78" height="78" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#F0E4D6" stroke-width="13"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#2EC4A6" stroke-width="13" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="70" transform="rotate(-90 50 50)"/>
+      </svg>
+      <small style="font-weight:800;color:var(--ink-soft)">Macro ring</small>
+    </div>
+    <div class="compcard">
+      <div class="meal" style="margin:0;width:100%"><div class="emoji">🍩</div><div><div class="mn">Donut</div><div class="mk">Snack</div></div><div class="mc">260</div></div>
+    </div>
+  </div>
+
+  <div class="footer">NutriSnap design north star · translate to Jetpack Compose (Material 3) · mascot “Pip” 🥭</div>
+</div>
+</body>
+</html>

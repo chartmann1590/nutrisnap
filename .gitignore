@@ -1,0 +1,26 @@
+# Secrets / signing
+*.jks
+*.keystore
+nutrisnap-release.jks
+local.properties
+google-services.json
+*.p12
+*.pem
+
+# Build artifacts
+.gradle/
+build/
+app/build/
+.idea/
+*.iml
+.cxx/
+captures/
+
+# Local tooling
+.playwright-mcp/
+temp/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

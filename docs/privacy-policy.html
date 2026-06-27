@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Privacy Policy — NutriSnap</title>
+<link rel="icon" href="assets/img/pip.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.legal-content { max-width: 780px; margin: 100px auto 60px; padding: 0 20px; }
+.legal-content h1 { font-size: 2rem; margin-bottom: 8px; }
+.legal-content .meta { color: var(--cocoa-soft); font-size: 0.9rem; margin-bottom: 32px; }
+.legal-content h2 { font-size: 1.3rem; margin: 32px 0 12px; color: var(--mango-deep); }
+.legal-content h3 { font-size: 1.05rem; margin: 24px 0 8px; }
+.legal-content p, .legal-content li { font-size: 0.95rem; line-height: 1.7; color: var(--cocoa-soft); margin-bottom: 12px; }
+.legal-content ul { padding-left: 24px; margin-bottom: 16px; }
+.legal-content strong { color: var(--cocoa); }
+.legal-content a { color: var(--mango); text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 24px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><img src="assets/img/pip.svg" alt=""> NutriSnap</a>
+    <ul class="nav-links">
+      <li><a href="index.html#features">Features</a></li>
+      <li><a href="index.html#faq">FAQ</a></li>
+      <li><a href="index.html#cta" class="nav-cta">Get NutriSnap</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="legal-content">
+  <a href="index.html" class="back-link">&larr; Back to NutriSnap</a>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Last updated: June 27, 2026 &middot; Version 1.0 &middot; App version: 0.2.0</p>
+
+  <h2>1. Who We Are</h2>
+  <p>
+    NutriSnap is developed by <strong>Charles Hartmann</strong>, an independent developer.
+    If you have questions about this policy, you can reach me at <strong>nutrisnap@charleshartmann.com</strong>.
+  </p>
+
+  <h2>2. Scope</h2>
+  <p>
+    This privacy policy applies to the NutriSnap Android mobile application (the "App") and the NutriSnap website
+    hosted at <strong>chartmann1590.github.io/nutrisnap</strong> (the "Site"). Both are operated by Charles Hartmann.
+  </p>
+
+  <h2>3. Data We Collect — App</h2>
+  <p>
+    NutriSnap is designed to be <strong>private by default</strong>. We collect the absolute minimum necessary
+    for the app to function — and everything stays on your device.
+  </p>
+
+  <h3>3.1 Camera &amp; Photo Data</h3>
+  <p>
+    When you use the <strong>AI food scan</strong> feature, the App accesses your device's camera or photo gallery
+    to capture an image of your meal. That image is processed <strong>entirely on your device</strong> by the
+    on-device Gemma 4 AI model (via LiteRT-LM). The image is held in memory only for the duration of the analysis
+    and is then discarded. <strong>No photo is ever uploaded, saved to a server, or transmitted off your device.</strong>
+  </p>
+
+  <h3>3.2 Meal, Weight &amp; Goal Data</h3>
+  <p>
+    Your meal history, weight entries, daily calorie goals, and preferences are stored <strong>locally on your device</strong>
+    using Room (SQLite database) and DataStore (preferences). This data never leaves your phone. You can view,
+    edit, or delete it at any time via the App's Settings screen.
+  </p>
+
+  <h3>3.3 Permissions</h3>
+  <p>The App may request the following permissions:</p>
+  <ul>
+    <li><strong>CAMERA</strong> — Used solely for taking photos of food for AI analysis. No images are transmitted.</li>
+    <li><strong>POST_NOTIFICATIONS</strong> — Used to show download progress when the AI model is being downloaded (one-time, optional).</li>
+    <li><strong>INTERNET</strong> — Used only for the optional one-time download of the Gemma 4 AI model from HuggingFace. No other network access occurs.</li>
+    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download.</li>
+  </ul>
+
+  <h3>3.4 Barcode Scanning</h3>
+  <p>
+    The barcode scanner uses Google's <strong>ML Kit Barcode Scanning</strong> API, which runs entirely on-device.
+    No barcode data is sent off the device.
+  </p>
+
+  <h3>3.5 Device Backup (allowBackup)</h3>
+  <p>
+    The App currently sets <code>android:allowBackup="true"</code>, which means your local meal and weight data
+    <strong>may be included in your device's Google Drive backup</strong> if you have Android backup enabled.
+    We recommend reviewing your device backup settings. We plan to set <code>allowBackup="false"</code> in a future
+    update to provide stronger privacy guarantees.
+  </p>
+
+  <h2>4. Data We Collect — Website</h2>
+  <p>
+    The NutriSnap website (this site) is a <strong>static site</strong> hosted on GitHub Pages.
+    We do not use cookies, analytics trackers, or third-party scripts. We self-host all fonts and assets to
+    prevent third-party data leakage.
+  </p>
+  <p>
+    GitHub Pages may automatically collect standard server logs (IP address, browser type, timestamp, requested
+    page) as part of normal HTTP operation. GitHub's own
+    <a href="https://docs.github.com/en/github/site-policy/github-privacy-statement" target="_blank" rel="noopener">
+    Privacy Statement</a> governs that data. We do not have access to those logs.
+  </p>
+
+  <h2>5. Third-Party Services</h2>
+  <p>NutriSnap uses the following third-party components, all of which operate on-device or are downloaded once:</p>
+  <ul>
+    <li><strong>Gemma 4 Model</strong> (Google LLC) — On-device AI model for food recognition. Downloaded from HuggingFace under the Gemma license. No data is sent to Google.</li>
+    <li><strong>LiteRT-LM</strong> (Google AI Edge) — Runtime for running the Gemma model on-device. Apache 2.0 license.</li>
+    <li><strong>ML Kit Barcode Scanning</strong> (Google LLC) — On-device barcode reader. No network calls.</li>
+    <li><strong>HuggingFace</strong> — Hosts the Gemma 4 model file for download. The download is optional, one-time, and direct from HuggingFace's servers.</li>
+    <li><strong>OkHttp</strong> (Square, Inc.) — HTTP client used for the model download. Apache 2.0 license.</li>
+  </ul>
+
+  <h2>6. No Analytics, No Ads, No Tracking</h2>
+  <p>
+    NutriSnap contains <strong>no analytics SDKs, no crash reporting SDKs, no advertising SDKs, and no third-party
+    tracking of any kind</strong>. We have no interest in your data. We have no way to access your data even if we wanted to.
+    The App is free with no subscriptions and no in-app purchases.
+  </p>
+
+  <h2>7. Data Retention &amp; Deletion</h2>
+  <p>
+    All data is stored locally on your device. To delete your data:
+  </p>
+  <ul>
+    <li><strong>Individual entries:</strong> Edit or delete meal entries from the Diary or Dashboard screens.</li>
+    <li><strong>All data:</strong> Uninstall the App or go to Settings &rarr; Apps &rarr; NutriSnap &rarr; Clear Storage.</li>
+    <li><strong>Export your data:</strong> Use the Settings &rarr; Export Data feature (available in-app) to save a copy before deleting.</li>
+  </ul>
+  <p>
+    Since we have no servers, there is nothing for us to delete on our end. Uninstalling the App removes all locally
+    stored data.
+  </p>
+
+  <h2>8. Children's Privacy</h2>
+  <p>
+    NutriSnap is not directed at children under the age of 16. We do not knowingly collect any personal information
+    from children. If you are a parent or guardian and believe your child has provided us with personal information,
+    contact us and we will advise you on removing it (though no such data exists on our servers).
+  </p>
+
+  <h2>9. Changes to This Policy</h2>
+  <p>
+    We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated
+    "Last updated" date. We encourage you to review this policy periodically.
+  </p>
+
+  <h2>10. Your Rights</h2>
+  <p>
+    Depending on your jurisdiction (e.g., under GDPR, CCPA, or similar laws), you may have the right to:
+  </p>
+  <ul>
+    <li><strong>Access</strong> your data — Use the App's Export feature.</li>
+    <li><strong>Delete</strong> your data — Uninstall the App or clear app storage.</li>
+    <li><strong>Object to processing</strong> — Since all processing is on-device and opt-in (you choose when to scan), you control everything.</li>
+  </ul>
+  <p>
+    To exercise these rights, contact <strong>nutrisnap@charleshartmann.com</strong>. We will respond within 30 days.
+  </p>
+
+  <h2>11. Open-Source Licenses</h2>
+  <p>
+    NutriSnap uses several open-source libraries. You can view the full list of licenses in the App by going to
+    Settings &rarr; Open-source Licenses. A text version is also available at
+    <a href="assets/licenses.txt" target="_blank">assets/licenses.txt</a>.
+  </p>
+
+  <h2>12. Contact</h2>
+  <p>
+    For privacy-related inquiries:<br>
+    <strong>Charles Hartmann</strong><br>
+    Email: <strong>nutrisnap@charleshartmann.com</strong><br>
+    GitHub: <a href="https://github.com/chartmann1590" target="_blank" rel="noopener">github.com/chartmann1590</a>
+  </p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo"><img src="assets/img/pip.svg" alt=""> NutriSnap</div>
+      <p>On-device AI calorie tracking that respects your privacy.</p>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <ul>
+        <li><a href="index.html#features">Features</a></li>
+        <li><a href="index.html#screenshots">Gallery</a></li>
+        <li><a href="index.html#faq">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="terms-of-service.html">Terms of Service</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:nutrisnap@charleshartmann.com">nutrisnap@<!-- -->charleshartmann.com</a></li>
+        <li><a href="https://github.com/chartmann1590" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">&copy; 2026 Charles Hartmann. No photos ever leave your device.</div>
+</footer>
+</body>
+</html>

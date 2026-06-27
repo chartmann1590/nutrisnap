@@ -1,0 +1,188 @@
+package com.charles.nutrisnap.ai
+
+import android.content.Context
+import android.graphics.Bitmap
+import com.charles.nutrisnap.BuildConfig
+import com.charles.nutrisnap.data.ModelRepository
+import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.ConversationConfig
+import com.google.ai.edge.litertlm.Content
+import com.google.ai.edge.litertlm.Contents
+import com.google.ai.edge.litertlm.Engine
+import com.google.ai.edge.litertlm.EngineConfig
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class LiteRtGemmaEngine @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val modelRepository: ModelRepository,
+) : GemmaEngine {
+
+    private val mutex = Mutex()
+    private var engine: Engine? = null
+    private var warmedUp = false
+
+    override suspend fun warmUp() = mutex.withLock {
+        if (warmedUp) return@withLock
+        engine = createEngine()
+        warmedUp = true
+    }
+
+    override suspend fun analyzeFood(image: Bitmap, hint: String?): Result<FoodEstimate> =
+        withContext(Dispatchers.Default) {
+            val eng = ensureEngine()
+            val modelPath = resolveModelPath()
+                ?: return@withContext Result.failure(IllegalStateException("Model not ready"))
+            val conv = eng.createConversation(ConversationConfig(
+                systemInstruction = Contents.of("You are a nutritionist. Return ONLY compact JSON.")
+            ))
+            try {
+                val imageFile = bitmapToTempFile(image)
+                val prompt = buildMultimodalPrompt(hint)
+                val response = conv.sendMessage(
+                    Contents.of(Content.ImageFile(imageFile.absolutePath), Content.Text(prompt))
+                )
+                val text = extractText(response)
+                android.util.Log.d("LiteRtGemmaEngine", "analyzeFood raw response: $text")
+                parseFoodEstimate(text).also {
+                    android.util.Log.d("LiteRtGemmaEngine", "analyzeFood parsed: $it")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("LiteRtGemmaEngine", "analyzeFood error", e)
+                Result.failure(e)
+            } finally {
+                conv.close()
+            }
+        }
+
+    override suspend fun estimateFromText(description: String): Result<FoodEstimate> =
+        withContext(Dispatchers.Default) {
+            val eng = ensureEngine()
+            val conv = eng.createConversation(ConversationConfig())
+            try {
+                val prompt = buildTextPrompt(description)
+                val response = conv.sendMessage(prompt)
+                val text = extractText(response)
+                parseFoodEstimate(text)
+            } catch (e: Exception) {
+                Result.failure(e)
+            } finally {
+                conv.close()
+            }
+        }
+
+    override fun isReady(): Boolean = warmedUp
+
+    suspend fun verifyModel(): Result<Unit> = withContext(Dispatchers.Default) {
+        val eng = ensureEngine()
+        val conv = eng.createConversation(ConversationConfig())
+        try {
+            val response = conv.sendMessage("Reply OK")
+            val text = extractText(response)
+            if (text.isBlank()) throw IllegalStateException("Empty response from model")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        } finally {
+            conv.close()
+        }
+    }
+
+    fun release() {
+        mutex.tryLock()
+        try {
+            engine?.close()
+            engine = null
+            warmedUp = false
+        } finally {
+            if (mutex.isLocked) mutex.unlock()
+        }
+    }
+
+    private suspend fun ensureEngine(): Engine = mutex.withLock {
+        engine ?: createEngine().also {
+            engine = it
+            warmedUp = true
+        }
+    }
+
+    private fun createEngine(): Engine {
+        val modelPath = resolveModelPath()
+            ?: throw IllegalStateException("Model not ready — warmUp() after download")
+        // Gemma 4 is multimodal: the text decoder AND the vision encoder each need a
+        // backend. visionBackend defaults to null — leaving it unset makes the loader
+        // skip the vision encoder, and sending an image then segfaults in native code.
+        //
+        // Prefer the GPU for speed, but the available GPU delegate varies by device (some
+        // Mali GPUs expose no working OpenCL/OpenGL path and engine init throws). Fall back
+        // to CPU (XNNPack) so the app still works everywhere rather than crashing.
+        return runCatching { buildEngine(modelPath, Backend.GPU()) }
+            .getOrElse { gpuError ->
+                android.util.Log.w(
+                    "LiteRtGemmaEngine",
+                    "GPU backend unavailable, falling back to CPU: ${gpuError.message}",
+                )
+                buildEngine(modelPath, Backend.CPU())
+            }
+    }
+
+    private fun buildEngine(modelPath: String, backend: Backend): Engine {
+        val config = EngineConfig(
+            modelPath = modelPath,
+            backend = backend,
+            visionBackend = backend,
+            cacheDir = context.cacheDir.path,
+        )
+        return Engine(config).also { it.initialize() }
+    }
+
+    private fun resolveModelPath(): String? {
+        return if (modelRepository.isReady()) {
+            File(File(context.filesDir, "models"), BuildConfig.MODEL_FILE_NAME).absolutePath
+        } else null
+    }
+
+    private fun bitmapToTempFile(bitmap: Bitmap): File {
+        val file = File(context.cacheDir, "analyze_${System.nanoTime()}.jpg")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+        }
+        return file
+    }
+
+    private fun buildMultimodalPrompt(hint: String?): String {
+        val hintPart = if (!hint.isNullOrBlank()) "\nUser hint: $hint" else ""
+        return """Analyze this food photo and return ONLY compact JSON with these fields:
+name (string), portionDescription (string), grams (int), kcal (int),
+proteinG (int), carbsG (int), fatG (int), confidence (float 0-1).
+Optional: items (array) for multi-component meals, each with the same fields.$hintPart
+
+JSON:"""
+    }
+
+    private fun buildTextPrompt(description: String): String {
+        return """Estimate nutrition for: $description
+Return ONLY compact JSON with: name, portionDescription, grams, kcal,
+proteinG, carbsG, fatG, confidence (float 0-1).
+
+JSON:"""
+    }
+
+    private fun extractText(msg: com.google.ai.edge.litertlm.Message): String {
+        return msg.contents.contents.joinToString(separator = "") { content ->
+            when (content) {
+                is Content.Text -> content.text
+                else -> ""
+            }
+        }
+    }
+}
