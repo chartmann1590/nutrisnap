@@ -22,10 +22,13 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Decode keystore
-        run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | sed '/^--/d' | base64 -d > nutrisnap-release.jks
+        run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d -i > nutrisnap-release.jks
 
       - name: Create google-services.json
-        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" | sed '/^--/d' | base64 -d > app/google-services.json
+        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d -i > app/google-services.json
+
+      - name: Validate google-services.json
+        run: python3 -c "import json,sys; json.load(open('app/google-services.json')); print('OK')"
 
       - name: Create local.properties
         run: |
