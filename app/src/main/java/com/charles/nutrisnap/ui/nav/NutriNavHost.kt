@@ -1,5 +1,9 @@
 package com.charles.nutrisnap.ui.nav
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -33,6 +37,20 @@ fun NutriNavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(280)) +
+                fadeIn(tween(280))
+        },
+        exitTransition = {
+            fadeOut(tween(200))
+        },
+        popEnterTransition = {
+            fadeIn(tween(280))
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(280)) +
+                fadeOut(tween(280))
+        },
     ) {
         composable(Routes.ONBOARDING) {
             val vm: OnboardingViewModel = hiltViewModel()
