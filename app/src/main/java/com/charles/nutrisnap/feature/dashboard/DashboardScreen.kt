@@ -76,7 +76,10 @@ fun DashboardScreen(
     }
 
     LaunchedEffect(state.todayMeals.size) {
-        if (state.todayMeals.size > previousMealCount && previousMealCount >= 0) {
+        val grew = state.todayMeals.size > previousMealCount
+        val justLogged = state.todayMeals.maxOfOrNull { it.timestampMs }
+            ?.let { System.currentTimeMillis() - it < 10_000L } ?: false
+        if (grew && justLogged) {
             showConfetti = true
         }
         previousMealCount = state.todayMeals.size
