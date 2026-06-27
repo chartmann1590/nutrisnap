@@ -9,6 +9,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import com.charles.nutrisnap.ui.theme.Berry
 import com.charles.nutrisnap.ui.theme.Cocoa
 import com.charles.nutrisnap.ui.theme.Mango
 import com.charles.nutrisnap.ui.theme.Mint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sin
 import kotlin.random.Random
@@ -80,12 +82,12 @@ fun Pip(
     // Blink: eyes are open (1f) most of the time, snapping shut briefly at random.
     val eyeOpen = remember { Animatable(1f) }
     if (animated) {
-        androidx.compose.runtime.LaunchedEffect(mood) {
+        LaunchedEffect(mood) {
             // Sleepy keeps eyes half-closed and blinks rarely.
             val base = if (mood == PipMood.Sleepy) 0.35f else 1f
             eyeOpen.snapTo(base)
             while (true) {
-                kotlinx.coroutines.delay(Random.nextLong(2400, 4800))
+                delay(Random.nextLong(2400, 4800))
                 eyeOpen.animateTo(0.08f, tween(70))
                 eyeOpen.animateTo(base, tween(110))
             }
@@ -118,7 +120,7 @@ fun Pip(
 
         // Squash-and-stretch: stretch tall near the top of the bob, squash wide at the
         // bottom. Poke adds an extra squash pulse.
-        val stretch = (bob - 0.5f) * 2f
+        val stretch = if (animated) (bob - 0.5f) * 2f else 0f
         val pokeSquash = sin(poke.value * Math.PI.toFloat())
         val sx = 1f + 0.05f * stretch + 0.10f * pokeSquash
         val sy = 1f - 0.05f * stretch - 0.10f * pokeSquash
@@ -177,6 +179,7 @@ fun Pip(
                 val open = eyeOpen.value
                 val pupilDy = if (mood == PipMood.Thinking) -w * 0.02f else 0f
                 if (mood == PipMood.Celebrate) {
+                    // Celebrate uses fixed happy arcs; the blink loop has no visual effect here.
                     // happy upturned arcs ^ ^
                     val arc = w * 0.05f
                     drawArc(

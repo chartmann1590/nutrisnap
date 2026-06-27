@@ -2,7 +2,9 @@ package com.charles.nutrisnap.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,8 +36,23 @@ fun NutriPill(
 }
 
 @Composable
-fun StreakPill(days: Int, modifier: Modifier = Modifier) =
-    NutriPill(text = "🔥 $days", modifier = modifier)
+fun StreakPill(days: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(NutriTheme.colors.mangoTint)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        StreakFlame(size = 18.dp, intensity = (days / 7f).coerceIn(0f, 1f))
+        Spacer(Modifier.width(4.dp))
+        Text(
+            "$days",
+            style = MaterialTheme.typography.labelLarge,
+            color = NutriTheme.colors.streak,
+        )
+    }
+}
 
 @Composable
 fun ConfidencePill(percent: Int, modifier: Modifier = Modifier) =
