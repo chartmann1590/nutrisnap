@@ -26,22 +26,35 @@ interface GemmaEngine {
 }
 
 interface ChatSession {
-    suspend fun send(userText: String): Result<String>
+    // Emits the cumulative reply text as it streams (each emission = full text so far).
+    // Normal completion ends the flow; failures propagate as exceptions.
+    fun sendStreaming(userText: String): Flow<String>
     fun close()
 }
 ```
 
 - `LiteRtGemmaEngine.startChat` creates and holds open one `litertlm.Conversation`
   (`eng.createConversation(ConversationConfig(systemInstruction = Contents.of(...)))`).
-  `ChatSession.send` calls `conv.sendMessage(userText)` and returns
-  `extractText(response)`; the open conversation provides in-session multi-turn
-  memory natively. `close()` closes the conversation.
-- The chat shares the single `Engine` instance and the existing `Mutex`, so a
-  chat inference and a food analysis never run concurrently (acceptable: one
-  model). `send` runs on `Dispatchers.Default` and is cancellable.
+  The open conversation provides in-session multi-turn memory natively.
+  `close()` calls `conv.cancelProcess()` then `conv.close()`.
+- **Streaming:** `ChatSession.sendStreaming` uses the library's streaming flow
+  `conv.sendMessageAsync(userText): Flow<com.google.ai.edge.litertlm.Message>`,
+  accumulating each emitted chunk's text into a running buffer and emitting the
+  cumulative string. The whole stream is wrapped so the existing `Mutex` is held
+  for its duration (acquire when collection starts, release on completion/cancel),
+  and run with `flowOn(Dispatchers.Default)`. Cancelling the collector cancels
+  generation (`cancelProcess()` on close).
+  - Library emit semantics (delta vs cumulative chunks) are confirmed by device
+    test. The implementation accumulates deltas (append); if a chunk turns out to
+    be cumulative, switch accumulation to "use latest" — a one-line change. The
+    ViewModel and its tests are unaffected because the fake controls emissions.
+- The chat shares the single `Engine` instance and `Mutex`, so a chat stream and
+  a food analysis never run concurrently (acceptable: one model).
 - `FakeGemmaEngine` (test) implements `startChat` returning a fake `ChatSession`
-  whose `send` returns a canned/echo reply, so the ViewModel is testable without
-  the model.
+  whose `sendStreaming` emits a deterministic sequence of growing strings (e.g.
+  "Hey", "Hey there", "Hey there!") then completes — so the ViewModel's streaming
+  and persistence logic is testable without the model. A configurable failure
+  mode lets a test make the flow throw.
 - If the model is not ready (`ModelRepository.isReady() == false`), `startChat`
   fails; the ViewModel surfaces a friendly Pip message rather than an error.
 
@@ -89,14 +102,18 @@ interface ChatSession {
   - `messages: StateFlow<List<ChatMessageEntity>>`
   - `isGenerating: StateFlow<Boolean>`
   - `pipMood: StateFlow<PipMood>` (`Thinking` while generating, else `Content`)
-  - `send(text: String)`: appends the user message (persist + show), sets
-    generating, calls `session.send`, appends Pip's reply (persist + show),
-    clears generating. On failure appends a gentle Pip fallback message.
-  - clears the `ChatSession` in `onCleared()`.
+  - `streamingText: StateFlow<String?>` — the in-progress Pip reply as it
+    streams (null when not generating).
+  - `send(text: String)`: appends + persists the user message, sets generating,
+    collects `session.sendStreaming(text)` updating `streamingText` on each
+    emission; on completion appends + persists Pip's final reply and clears
+    `streamingText`/generating. On failure appends a gentle Pip fallback message.
+  - clears the `ChatSession` in `onCleared()` (cancels any in-flight stream).
 - `PipChatScreen`: a full-screen layout — a large animated `Pip(mood = ...)` at
   the top reacting as he talks, a scrolling list of message bubbles
-  (user vs Pip styling), a "Pip is thinking…" typing indicator while generating,
-  and a text input + send bar. Back button returns to the dashboard.
+  (user vs Pip styling), a "Pip is thinking…" typing indicator shown until the
+  first token then replaced by the live-streaming text bubble, and a text input +
+  send bar. Back button returns to the dashboard.
 - Navigation: add `Routes.PIP_CHAT` and a `composable(Routes.PIP_CHAT)` in
   `NutriNavHost`. The dashboard header `Pip` gets an `onPoke`/tap that navigates
   to `Routes.PIP_CHAT` (replacing the current poke-only behavior on the
@@ -123,9 +140,10 @@ model I/O and from Compose.
   representative snapshot; omits absent sections (no weight, no meals); reflects
   over-goal vs under-goal correctly.
 - Unit tests for `PipChatViewModel` against `FakeGemmaEngine`: sending a message
-  appends the user message then a Pip reply; `isGenerating`/`pipMood` toggle
-  around the call; a failing `send` appends the fallback message and leaves the
-  UI usable.
+  appends the user message; `streamingText` reflects the growing chunks during
+  generation; on completion the final Pip reply is appended and persisted and
+  `streamingText` is cleared; `isGenerating`/`pipMood` toggle around the call; a
+  failing stream appends the fallback message and leaves the UI usable.
 - `ChatRepository`/DAO covered by an in-memory Room test (insert → observe →
   clear), following the existing `MealRepositoryTest`/Room test pattern.
 - Chat UI and Pip animation verified on device (manual; synthetic taps cannot
@@ -134,7 +152,5 @@ model I/O and from Compose.
 ## Out of scope (v1)
 
 - Pip taking actions (logging meals, setting reminders) — read-only chat only.
-- Token streaming — v1 returns the full reply with a typing indicator;
-  streaming is a clean later enhancement.
 - Voice input/output.
 - Summarizing/condensing long history beyond the last-6-messages excerpt.
