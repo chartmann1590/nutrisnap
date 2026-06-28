@@ -13,16 +13,19 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.charles.nutrisnap.feature.achievements.AchievementsScreen
 import com.charles.nutrisnap.feature.dashboard.DashboardScreen
 import com.charles.nutrisnap.feature.dashboard.EditMealScreen
 import com.charles.nutrisnap.feature.entry.EntryScreen
 import com.charles.nutrisnap.feature.history.DiaryScreen
 import com.charles.nutrisnap.feature.history.TrendsScreen
+import com.charles.nutrisnap.feature.milestones.MilestonesScreen
 import com.charles.nutrisnap.feature.onboarding.DownloadScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingEvent
 import com.charles.nutrisnap.feature.onboarding.OnboardingScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingViewModel
 import com.charles.nutrisnap.feature.pip.PipChatScreen
+import com.charles.nutrisnap.feature.piproom.PipRoomScreen
 import com.charles.nutrisnap.feature.profile.ProfileScreen
 import com.charles.nutrisnap.feature.scan.ScanResultScreen
 import com.charles.nutrisnap.feature.scan.ScanScreen
@@ -87,7 +90,26 @@ fun NutriNavHost(
         composable(Routes.DIARY) { DiaryScreen() }
         composable(Routes.TRENDS) { TrendsScreen() }
         composable(Routes.PROFILE) {
-            ProfileScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) })
+            ProfileScreen(
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onPipRoom = { navController.navigate(Routes.PIP_ROOM) },
+                onMilestones = { navController.navigate(Routes.MILESTONES) },
+            )
+        }
+        composable(Routes.ACHIEVEMENTS) {
+            AchievementsScreen(
+                onBack = { navController.popBackStack() },
+                onPipChat = { navController.navigate(Routes.PIP_CHAT) },
+            )
+        }
+        composable(Routes.PIP_ROOM) {
+            PipRoomScreen(
+                onBack = { navController.popBackStack() },
+                onPipChat = { navController.navigate(Routes.PIP_CHAT) },
+            )
+        }
+        composable(Routes.MILESTONES) {
+            MilestonesScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.SCAN) {

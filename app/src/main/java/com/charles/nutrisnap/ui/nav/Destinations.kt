@@ -2,6 +2,7 @@ package com.charles.nutrisnap.ui.nav
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Person
@@ -23,6 +24,10 @@ object Routes {
     const val SETTINGS = "settings"
     const val PIP_CHAT = "pip_chat"
 
+    const val ACHIEVEMENTS = "achievements"
+    const val PIP_ROOM = "pip_room"
+    const val MILESTONES = "milestones"
+
     fun scanResult(estimateKey: String) = "scan_result/$estimateKey"
     fun entry(mode: String, bitmapKey: String? = null) =
         if (bitmapKey != null) "entry/$mode?bitmapKey=$bitmapKey" else "entry/$mode"
@@ -33,5 +38,6 @@ enum class TopLevelTab(val route: String, val label: String, val icon: ImageVect
     HOME(Routes.HOME, "Home", Icons.Rounded.Home),
     DIARY(Routes.DIARY, "Diary", Icons.Rounded.MenuBook),
     TRENDS(Routes.TRENDS, "Trends", Icons.Rounded.BarChart),
+    ACHIEVEMENTS(Routes.ACHIEVEMENTS, "Badges", Icons.Rounded.EmojiEvents),
     PROFILE(Routes.PROFILE, "Me", Icons.Rounded.Person),
 }

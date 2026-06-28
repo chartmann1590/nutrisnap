@@ -34,6 +34,8 @@ import com.charles.nutrisnap.ui.theme.NutriTheme
 @Composable
 fun ProfileScreen(
     onOpenSettings: () -> Unit,
+    onPipRoom: () -> Unit = {},
+    onMilestones: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -64,8 +66,12 @@ fun ProfileScreen(
             Spacer(Modifier.height(4.dp))
         }
 
-        TextButton(onClick = { /* Phase 6 will wire navigation */ }) {
+        TextButton(onClick = onPipRoom) {
             Text("Visit Pip's Room →", color = Color(0xFFFF9F1C))
+        }
+
+        TextButton(onClick = onMilestones) {
+            Text("✨ Your Moments", color = Color(0xFF7C5CFC))
         }
 
         Spacer(Modifier.height(12.dp))
