@@ -144,7 +144,7 @@ fun MilestoneCard(
                 .drawBehind {
                     val centerX = size.width / 2f
                     val circleRadius = 16.dp.toPx()
-                    val circleCenter = circleRadius
+                    val circleCenter = size.height / 2f
 
                     // Draw dashed line above circle (unless first)
                     if (!isFirst) {
@@ -168,7 +168,7 @@ fun MilestoneCard(
                         )
                     }
                 },
-            contentAlignment = Alignment.TopCenter,
+            contentAlignment = Alignment.Center,
         ) {
             // Colored circle dot
             Box(

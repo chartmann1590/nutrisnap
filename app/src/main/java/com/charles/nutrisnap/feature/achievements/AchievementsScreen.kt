@@ -30,7 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -161,32 +164,54 @@ fun BadgeCell(item: BadgeDisplayItem, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .then(
-                        if (isEarned) {
-                            Modifier.shadow(elevation = 8.dp, shape = CircleShape, ambientColor = color, spotColor = color)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .background(
-                        color = if (isEarned) color else Color.Gray.copy(alpha = 0.5f),
-                        shape = CircleShape,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isEarned) {
+            if (isEarned) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .shadow(elevation = 8.dp, shape = CircleShape, ambientColor = color, spotColor = color)
+                        .background(color = color, shape = CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Text(
                         text = item.type.emoji,
                         fontSize = 28.sp,
                         textAlign = TextAlign.Center,
                     )
-                } else {
+                }
+            } else {
+                Box(
+                    modifier = Modifier.size(64.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .alpha(0.5f)
+                            .drawWithContent {
+                                val paint = Paint().apply {
+                                    colorFilter = ColorFilter.colorMatrix(
+                                        ColorMatrix().apply { setToSaturation(0f) }
+                                    )
+                                }
+                                drawContext.canvas.saveLayer(
+                                    androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
+                                    paint
+                                )
+                                drawContent()
+                                drawContext.canvas.restore()
+                            }
+                            .background(color = color, shape = CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = item.type.emoji,
+                            fontSize = 28.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                     Text(
                         text = "🔒",
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         textAlign = TextAlign.Center,
                     )
                 }
