@@ -5,7 +5,11 @@ import android.graphics.Bitmap
 import app.cash.turbine.test
 import com.charles.nutrisnap.ai.FakeGemmaEngine
 import com.charles.nutrisnap.data.MealRepository
+import com.charles.nutrisnap.data.PipEventBus
 import com.charles.nutrisnap.data.PremiumAccess
+import com.charles.nutrisnap.data.badge.BadgeDetector
+import com.charles.nutrisnap.data.challenge.DailyChallengeRepository
+import io.mockk.mockk
 import com.charles.nutrisnap.data.PremiumEntitlement
 import com.charles.nutrisnap.data.PremiumPlan
 import com.charles.nutrisnap.data.ScanQuota
@@ -15,6 +19,7 @@ import com.charles.nutrisnap.data.db.MealType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -121,7 +126,15 @@ class ScanViewModelTest {
 private fun scanViewModel(
     premium: PremiumAccess = FakePremiumAccess(),
     quota: FakeScanQuotaRepository = FakeScanQuotaRepository(),
-) = ScanViewModel(FakeGemmaEngine(), fakeMealRepo(), premium, quota)
+) = ScanViewModel(
+    FakeGemmaEngine(),
+    fakeMealRepo(),
+    premium,
+    quota,
+    mockk(relaxed = true),
+    mockk(relaxed = true),
+    PipEventBus(),
+)
 
 private class FakePremiumAccess(
     isPremium: Boolean = false,
@@ -151,4 +164,6 @@ private class FakeScanQuotaRepository(
 private fun fakeMealRepo() = object : MealRepository(null) {
     override suspend fun logMeal(meal: MealEntity): Long = 1L
     override suspend fun deleteMeal(id: Long) {}
+    override fun observeTodayMeals() = flowOf(emptyList<MealEntity>())
+    override fun todayEpochDay(): Long = 0L
 }

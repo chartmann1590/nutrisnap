@@ -112,11 +112,11 @@ open class UserPreferencesRepository @Inject constructor(
         dataStore!!.edit { it[Keys.ANALYTICS_ENABLED] = enabled }
     }
 
-    open val pipSoundsEnabled: Flow<Boolean> = dataStore!!.data.map { p -> p[Keys.PIP_SOUNDS_ENABLED] ?: true }
-    open val pipVoiceEnabled: Flow<Boolean> = dataStore!!.data.map { p -> p[Keys.PIP_VOICE_ENABLED] ?: false }
-    open val pipAccessory: Flow<PipAccessory> = dataStore!!.data.map { p ->
+    open val pipSoundsEnabled: Flow<Boolean> by lazy { dataStore!!.data.map { p -> p[Keys.PIP_SOUNDS_ENABLED] ?: true } }
+    open val pipVoiceEnabled: Flow<Boolean> by lazy { dataStore!!.data.map { p -> p[Keys.PIP_VOICE_ENABLED] ?: false } }
+    open val pipAccessory: Flow<PipAccessory> by lazy { dataStore!!.data.map { p ->
         runCatching { PipAccessory.valueOf(p[Keys.PIP_ACCESSORY] ?: "NONE") }.getOrDefault(PipAccessory.NONE)
-    }
+    } }
 
     open suspend fun setPipSoundsEnabled(enabled: Boolean) { dataStore!!.edit { it[Keys.PIP_SOUNDS_ENABLED] = enabled } }
     open suspend fun setPipVoiceEnabled(enabled: Boolean) { dataStore!!.edit { it[Keys.PIP_VOICE_ENABLED] = enabled } }
