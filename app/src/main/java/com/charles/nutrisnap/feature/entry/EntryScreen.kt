@@ -47,6 +47,7 @@ import com.charles.nutrisnap.ui.components.LoadingState
 import com.charles.nutrisnap.ui.components.MacroTile
 import com.charles.nutrisnap.ui.components.NutriCard
 import com.charles.nutrisnap.ui.components.Pip
+import com.charles.nutrisnap.ui.components.PipMood
 import com.charles.nutrisnap.ui.components.PrimaryButton
 import com.charles.nutrisnap.ui.components.SegmentedToggle
 import com.charles.nutrisnap.ui.components.Stepper
@@ -72,6 +73,7 @@ fun EntryScreen(
     var selectedMealType by remember { mutableStateOf(MealType.LUNCH) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var attemptedEstimate by remember { mutableStateOf(false) }
+    val isEditing = description.isNotEmpty()
 
     val estimate = when (val s = state) {
         is EntryUiState.EstimateReady -> s.estimate
@@ -119,7 +121,12 @@ fun EntryScreen(
             IconButton(onClick = onClose) {
                 Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
             }
-            Text("Add food", style = MaterialTheme.typography.headlineMedium)
+            Text("Add food", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+            Pip(
+                size = 36.dp,
+                mood = if (isEditing) PipMood.Thinking else PipMood.Content,
+                animated = false,
+            )
         }
 
         Spacer(Modifier.height(12.dp))

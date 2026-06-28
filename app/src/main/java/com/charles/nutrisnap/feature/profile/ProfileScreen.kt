@@ -15,18 +15,20 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.charles.nutrisnap.ui.components.Pip
 import com.charles.nutrisnap.ui.components.NutriCard
+import com.charles.nutrisnap.ui.components.Pip
+import com.charles.nutrisnap.ui.components.PipMood
 import com.charles.nutrisnap.ui.components.SecondaryButton
-import com.charles.nutrisnap.ui.components.StreakPill
 import com.charles.nutrisnap.ui.theme.NutriTheme
 
 @Composable
@@ -44,13 +46,29 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(32.dp))
-        Pip(size = 100.dp, animated = false)
-        Spacer(Modifier.height(16.dp))
+
+        val pipMood = when {
+            state.streak >= 7 -> PipMood.Celebrate
+            state.streak >= 2 -> PipMood.Proud
+            else -> PipMood.Content
+        }
+        Pip(size = 72.dp, mood = pipMood, animated = state.streak > 0)
+        Spacer(Modifier.height(8.dp))
 
         if (state.streak > 0) {
-            StreakPill(days = state.streak)
-            Spacer(Modifier.height(12.dp))
+            Text(
+                "🔥 ${state.streak}-day streak",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(4.dp))
         }
+
+        TextButton(onClick = { /* Phase 6 will wire navigation */ }) {
+            Text("Visit Pip's Room →", color = Color(0xFFFF9F1C))
+        }
+
+        Spacer(Modifier.height(12.dp))
 
         Text("Daily goal", style = MaterialTheme.typography.titleMedium)
         NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {

@@ -1,5 +1,9 @@
 package com.charles.nutrisnap.feature.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,8 +46,8 @@ import com.charles.nutrisnap.ui.components.EmptyState
 import com.charles.nutrisnap.ui.components.MacroBar
 import com.charles.nutrisnap.ui.components.NutriCard
 import com.charles.nutrisnap.ui.components.Pip
-import com.charles.nutrisnap.ui.components.PipAccessory
 import com.charles.nutrisnap.ui.components.PipMood
+import com.charles.nutrisnap.ui.components.PipSpeechBubble
 import com.charles.nutrisnap.ui.components.StreakPill
 import com.charles.nutrisnap.ui.theme.NutriTheme
 import kotlinx.coroutines.delay
@@ -62,9 +65,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val accessory by viewModel.currentAccessory.collectAsState()
     var showConfetti by remember { mutableStateOf(false) }
-    var previousMealCount by remember { mutableStateOf(state.todayMeals.size) }
 
     LaunchedEffect(state.streak) {
         if (state.streak > 0 && state.streak % 7 == 0) {
@@ -79,10 +80,6 @@ fun DashboardScreen(
         }
     }
 
-    LaunchedEffect(state.todayMeals.size) {
-        previousMealCount = state.todayMeals.size
-    }
-
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -92,7 +89,24 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                HeaderSection(state, celebrating = showConfetti, onPipTap = onOpenPipChat, accessory = accessory)
+                HeaderSection(
+                    state = state,
+                    celebrating = showConfetti,
+                    onPipTap = onOpenPipChat,
+                    onDismissReaction = { viewModel.dismissReaction() },
+                )
+            }
+
+            item {
+                state.todayChallenge?.let { challenge ->
+                    DailyChallengeCard(
+                        challenge = challenge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        onTap = onOpenPipChat,
+                    )
+                }
             }
 
             item {
@@ -135,22 +149,49 @@ private fun HeaderSection(
     state: DashboardUiState,
     celebrating: Boolean,
     onPipTap: () -> Unit,
-    accessory: PipAccessory = PipAccessory.NONE,
+    onDismissReaction: () -> Unit,
 ) {
-    val mood = if (celebrating) PipMood.Celebrate else pipMoodFor(state)
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Pip(size = 56.dp, mood = mood, accessory = accessory, animated = true, onPoke = onPipTap)
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text("Hey there!", style = MaterialTheme.typography.headlineMedium)
-            Text(
-                dayLabel(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+    val activeMood = state.pipReaction?.mood
+        ?: if (celebrating) PipMood.Celebrate else pipMoodFor(state)
+
+    // Outer Box so AnimatedVisibility runs in BoxScope (avoids RowScope ambiguity)
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Pip(
+                size = 56.dp,
+                mood = activeMood,
+                accessory = state.currentAccessory,
+                animated = true,
+                onPoke = onPipTap,
             )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Hey there!", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    dayLabel(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (state.streak > 0) {
+                StreakPill(days = state.streak)
+            }
         }
-        if (state.streak > 0) {
-            StreakPill(days = state.streak)
+        // Speech bubble floats above Pip inside the Box
+        AnimatedVisibility(
+            visible = state.pipReaction != null,
+            enter = slideInVertically { it / 2 } + fadeIn(tween(200)),
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 64.dp),
+        ) {
+            PipSpeechBubble(
+                text = state.pipReaction?.speech ?: "",
+                onDismiss = onDismissReaction,
+            )
         }
     }
 }

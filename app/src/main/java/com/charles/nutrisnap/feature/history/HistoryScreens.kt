@@ -49,7 +49,8 @@ import com.charles.nutrisnap.ui.components.EmptyState
 import com.charles.nutrisnap.ui.components.LoadingState
 import com.charles.nutrisnap.ui.components.NutriCard
 import com.charles.nutrisnap.ui.components.Pip
-import com.charles.nutrisnap.ui.components.StreakPill
+import com.charles.nutrisnap.ui.components.PipMood
+import com.charles.nutrisnap.ui.components.PipSpeechBubble
 import com.charles.nutrisnap.ui.theme.NutriTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -138,12 +139,32 @@ fun DiaryScreen(
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
+            val allMealsLogged = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER)
+                .all { type -> state.mealsByType[type]?.isNotEmpty() == true }
+
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 MealType.entries.forEach { type ->
                     val meals = state.mealsByType[type] ?: emptyList()
                     if (meals.isNotEmpty()) {
                         item {
                             MealSection(type, meals)
+                        }
+                    }
+                }
+                if (allMealsLogged) {
+                    item {
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        ) {
+                            Pip(size = 48.dp, mood = PipMood.Celebrate, animated = true)
+                            Spacer(Modifier.width(8.dp))
+                            PipSpeechBubble(
+                                text = "Full day logged! Amazing! 🎉",
+                                onDismiss = {},
+                                persistent = true,
+                            )
                         }
                     }
                 }
