@@ -57,6 +57,8 @@ class DashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private var goalHitEmittedToday = false
+
     init {
         // Collect base data flows
         viewModelScope.launch {
@@ -76,6 +78,13 @@ class DashboardViewModel @Inject constructor(
                         streak = StreakCalculator.currentStreak(loggedDays.toSet(), today),
                         bestStreak = StreakCalculator.bestStreak(loggedDays.toSet()),
                     )
+                }
+                val kcalRemaining = remaining?.kcalRemaining ?: Int.MAX_VALUE
+                if (kcalRemaining <= 0 && !goalHitEmittedToday) {
+                    goalHitEmittedToday = true
+                    pipEventBus.emit(PipEvent.GoalHit)
+                } else if (kcalRemaining > 0) {
+                    goalHitEmittedToday = false
                 }
             }.collect {}
         }

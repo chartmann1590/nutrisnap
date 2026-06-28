@@ -92,7 +92,7 @@ fun AchievementsScreen(
                 .padding(innerPadding),
         ) {
             Text(
-                "You've earned $earnedCount of 25 badges",
+                "You've earned $earnedCount of ${BadgeType.entries.size} badges",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),

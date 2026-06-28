@@ -44,10 +44,5 @@ enum class DailyChallengeType(
         emoji = "🎯",
         rewardBadge = BadgeType.CHALLENGE_CHAMP
     ),
-    LIGHT_DAY(
-        displayName = "Light Day",
-        description = "Keep calories under 1200 today",
-        emoji = "🥦",
-        rewardBadge = BadgeType.LIGHT_EATER
-    ),
+    LIGHT_DAY("Light day", "Keep calories under 80% of your daily goal", "🥦", BadgeType.LIGHT_EATER),
 }

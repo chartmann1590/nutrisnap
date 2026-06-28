@@ -114,5 +114,8 @@ class BadgeDetector @Inject constructor(
         val completedChallenges = dailyChallengeDao.countCompleted()
         awardIf(BadgeType.CHALLENGE_CHAMP, completedChallenges >= 1)
 
+        // Staged for future implementation:
+        // MONTHLY, MORNING_PERSON, STREAK_SAVER, THREE_PEAT, VARIETY, PROTEIN_CHAMP,
+        // LIGHT_EATER, CONSISTENT, FIRST_WEEK, MONDAY_CHAMP, WEEKEND_WARRIOR
     }
 }

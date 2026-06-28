@@ -132,7 +132,7 @@ class DailyChallengeRepository @Inject constructor(
             meal.mealType == MealType.BREAKFAST && hour(meal.timestampMs) < 8
         }
         DailyChallengeType.HIT_CALORIE_GOAL ->
-            remaining != null && remaining.kcalRemaining in (-50..0)
+            remaining != null && remaining.kcalRemaining in (-100..100)
         DailyChallengeType.LIGHT_DAY ->
             remaining != null &&
                 remaining.totals.totalKcal <= (remaining.goal.calories * 0.8).toInt()

@@ -28,7 +28,9 @@ class AchievementsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private fun buildDisplayList(earned: List<BadgeEntity>): List<BadgeDisplayItem> {
-        val earnedMap = earned.associateBy { BadgeType.valueOf(it.badgeType) }
+        val earnedMap = earned.mapNotNull { entity ->
+            runCatching { BadgeType.valueOf(entity.badgeType) }.getOrNull()?.let { it to entity }
+        }.toMap()
         val earnedItems = earnedMap.entries
             .sortedByDescending { it.value.earnedAtMs }
             .map { BadgeDisplayItem(it.key, it.value.earnedAtMs, !it.value.seen) }
