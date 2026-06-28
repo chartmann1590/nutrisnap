@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import com.charles.nutrisnap.ui.components.EmptyState
 import com.charles.nutrisnap.ui.components.MacroBar
 import com.charles.nutrisnap.ui.components.NutriCard
 import com.charles.nutrisnap.ui.components.Pip
+import com.charles.nutrisnap.ui.components.PipAccessory
 import com.charles.nutrisnap.ui.components.PipMood
 import com.charles.nutrisnap.ui.components.StreakPill
 import com.charles.nutrisnap.ui.theme.NutriTheme
@@ -60,6 +62,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val accessory by viewModel.currentAccessory.collectAsState()
     var showConfetti by remember { mutableStateOf(false) }
     var previousMealCount by remember { mutableStateOf(state.todayMeals.size) }
 
@@ -89,7 +92,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                HeaderSection(state, celebrating = showConfetti, onPipTap = onOpenPipChat)
+                HeaderSection(state, celebrating = showConfetti, onPipTap = onOpenPipChat, accessory = accessory)
             }
 
             item {
@@ -128,10 +131,15 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeaderSection(state: DashboardUiState, celebrating: Boolean, onPipTap: () -> Unit) {
+private fun HeaderSection(
+    state: DashboardUiState,
+    celebrating: Boolean,
+    onPipTap: () -> Unit,
+    accessory: PipAccessory = PipAccessory.NONE,
+) {
     val mood = if (celebrating) PipMood.Celebrate else pipMoodFor(state)
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Pip(size = 56.dp, mood = mood, animated = true, onPoke = onPipTap)
+        Pip(size = 56.dp, mood = mood, accessory = accessory, animated = true, onPoke = onPipTap)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("Hey there!", style = MaterialTheme.typography.headlineMedium)

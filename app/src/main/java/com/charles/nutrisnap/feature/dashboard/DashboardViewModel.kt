@@ -9,6 +9,7 @@ import com.charles.nutrisnap.data.RingProgress
 import com.charles.nutrisnap.data.StreakCalculator
 import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.data.db.MealEntity
+import com.charles.nutrisnap.ui.components.PipAccessory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,12 @@ class DashboardViewModel @Inject constructor(
     mealRepository: MealRepository,
     prefs: UserPreferencesRepository,
 ) : ViewModel() {
+
+    val currentAccessory: StateFlow<PipAccessory> = prefs.pipAccessory.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = PipAccessory.NONE,
+    )
 
     val state: StateFlow<DashboardUiState> = combine(
         goalRepository.observeRemaining(),
