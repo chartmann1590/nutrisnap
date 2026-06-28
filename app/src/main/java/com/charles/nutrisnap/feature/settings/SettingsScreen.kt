@@ -16,6 +16,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val pipSoundsEnabled by viewModel.pipSoundsEnabled.collectAsState()
+    val pipVoiceEnabled by viewModel.pipVoiceEnabled.collectAsState()
 
     Column(
         modifier = modifier
@@ -189,6 +192,40 @@ fun SettingsScreen(
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = viewModel::resetFirebaseId) {
                 Text("Reset analytics identifier")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Pip Personality
+        NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Pip Personality", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Pip Sounds 🔔", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Play sounds when Pip reacts",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = pipSoundsEnabled, onCheckedChange = { viewModel.setPipSoundsEnabled(it) })
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Pip's Voice 🗣️", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Let Pip read responses aloud",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = pipVoiceEnabled, onCheckedChange = { viewModel.setPipVoiceEnabled(it) })
             }
         }
 

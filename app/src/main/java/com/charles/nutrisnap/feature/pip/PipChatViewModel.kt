@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.ai.ChatSession
 import com.charles.nutrisnap.ai.GemmaEngine
 import com.charles.nutrisnap.data.ChatRepository
+import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.data.db.ChatMessageEntity
 import com.charles.nutrisnap.data.db.ChatRole
 import com.charles.nutrisnap.ui.components.PipMood
+import com.charles.nutrisnap.ui.sound.PipVoiceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +24,8 @@ class PipChatViewModel @Inject constructor(
     private val engine: GemmaEngine,
     private val chatRepository: ChatRepository,
     private val snapshotSource: PipSnapshotSource,
+    private val pipVoiceManager: PipVoiceManager,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     companion object {
@@ -45,6 +49,13 @@ class PipChatViewModel @Inject constructor(
 
     private val _pipMood = MutableStateFlow(PipMood.Content)
     val pipMood: StateFlow<PipMood> = _pipMood.asStateFlow()
+
+    val pipVoiceEnabled: StateFlow<Boolean> = prefs.pipVoiceEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun speak(text: String) {
+        pipVoiceManager.speak(text)
+    }
 
     private var session: ChatSession? = null
 

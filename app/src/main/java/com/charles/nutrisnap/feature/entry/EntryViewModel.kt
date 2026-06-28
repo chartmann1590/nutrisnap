@@ -5,6 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.ai.FoodEstimate
 import com.charles.nutrisnap.ai.GemmaEngine
 import com.charles.nutrisnap.data.MealRepository
+import com.charles.nutrisnap.data.PipEvent
+import com.charles.nutrisnap.data.PipEventBus
+import com.charles.nutrisnap.data.badge.BadgeDetector
+import com.charles.nutrisnap.data.challenge.DailyChallengeRepository
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
@@ -16,6 +20,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,6 +40,9 @@ sealed interface EntryEvent {
 class EntryViewModel @Inject constructor(
     private val gemmaEngine: GemmaEngine,
     private val mealRepository: MealRepository,
+    private val badgeDetector: BadgeDetector,
+    private val dailyChallengeRepository: DailyChallengeRepository,
+    private val pipEventBus: PipEventBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<EntryUiState>(EntryUiState.Idle)
@@ -64,6 +72,7 @@ class EntryViewModel @Inject constructor(
     ) {
         _state.value = EntryUiState.Logging
         viewModelScope.launch {
+            val isFirstMeal = mealRepository.observeTodayMeals().first().isEmpty()
             val now = System.currentTimeMillis()
             val meal = MealEntity(
                 timestampMs = now,
@@ -79,6 +88,11 @@ class EntryViewModel @Inject constructor(
             )
             mealRepository.logMeal(meal)
             _state.value = EntryUiState.Done
+            // Gamification
+            if (isFirstMeal) pipEventBus.emit(PipEvent.FirstMealOfDay)
+            pipEventBus.emit(PipEvent.MealLogged)
+            badgeDetector.checkAndAward()
+            dailyChallengeRepository.checkAndComplete(mealRepository.todayEpochDay())
             _events.emit(EntryEvent.Logged)
         }
     }
