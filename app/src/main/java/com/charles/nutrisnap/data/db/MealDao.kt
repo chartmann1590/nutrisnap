@@ -75,4 +75,7 @@ interface MealDao {
         ORDER BY epochDay DESC
     """)
     fun observeDistinctLoggedLocalDays(offsetMs: Long): Flow<List<Long>>
+
+    @Query("SELECT COUNT(*) FROM meal_entity")
+    suspend fun countAll(): Int
 }

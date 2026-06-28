@@ -6,6 +6,7 @@ import com.charles.nutrisnap.data.PipEvent
 import com.charles.nutrisnap.data.PipEventBus
 import com.charles.nutrisnap.data.StreakCalculator
 import com.charles.nutrisnap.data.db.DailyChallengeDao
+import com.charles.nutrisnap.data.db.MealDao
 import com.charles.nutrisnap.data.db.MealType
 import com.charles.nutrisnap.data.milestone.MilestoneRepository
 import com.charles.nutrisnap.data.milestone.MilestoneType
@@ -22,6 +23,7 @@ class BadgeDetector @Inject constructor(
     private val goalRepository: GoalRepository,
     private val pipEventBus: PipEventBus,
     private val dailyChallengeDao: DailyChallengeDao,
+    private val mealDao: MealDao,
 ) {
     /**
      * Checks all badge conditions and awards any newly earned badges.
@@ -35,8 +37,8 @@ class BadgeDetector @Inject constructor(
         val earnedBadges = badgeRepository.getAll().first().map { it.badgeType }.toSet()
         val currentStreak = StreakCalculator.currentStreak(loggedDays, today)
 
-        // Use number of distinct days with logged meals as the meal-count metric
-        val mealCount = loggedDays.size
+        // Use total meal entries as the meal-count metric
+        val mealCount = mealDao.countAll()
 
         // Helper: award a badge only if condition is met and badge not yet earned
         suspend fun awardIf(type: BadgeType, condition: Boolean) {
@@ -112,9 +114,5 @@ class BadgeDetector @Inject constructor(
         val completedChallenges = dailyChallengeDao.countCompleted()
         awardIf(BadgeType.CHALLENGE_CHAMP, completedChallenges >= 1)
 
-        // --- GoalHit event: kcal within 0..50 of goal (hit or slightly over) ---
-        if (remaining != null && remaining.kcalRemaining in (-50..0)) {
-            pipEventBus.emit(PipEvent.GoalHit)
-        }
     }
 }

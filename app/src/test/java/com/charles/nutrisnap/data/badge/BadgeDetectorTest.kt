@@ -15,6 +15,8 @@ import com.charles.nutrisnap.data.db.BadgeEntity
 import com.charles.nutrisnap.data.db.DailyChallengeDao
 import com.charles.nutrisnap.data.db.DailyChallengeEntity
 import com.charles.nutrisnap.data.db.DayTotals
+import com.charles.nutrisnap.data.db.DayTotalsWithEpochDay
+import com.charles.nutrisnap.data.db.MealDao
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
@@ -86,6 +88,18 @@ class BadgeDetectorTest {
         override suspend fun countCompleted(): Int = completedCount
     }
 
+    private class FakeMealDao(private val count: Int = 0) : MealDao {
+        override suspend fun insert(meal: MealEntity): Long = 0L
+        override suspend fun update(meal: MealEntity) {}
+        override suspend fun delete(meal: MealEntity) {}
+        override suspend fun deleteById(id: Long) {}
+        override fun observeRange(startMs: Long, endMs: Long): Flow<List<MealEntity>> = flowOf(emptyList())
+        override fun observeDayTotals(startMs: Long, endMs: Long): Flow<DayTotals> = flowOf(DayTotals())
+        override fun observeDayTotalsRange(startMs: Long, endMs: Long, offsetMs: Long): Flow<List<DayTotalsWithEpochDay>> = flowOf(emptyList())
+        override fun observeDistinctLoggedLocalDays(offsetMs: Long): Flow<List<Long>> = flowOf(emptyList())
+        override suspend fun countAll(): Int = count
+    }
+
     private fun makeDetector(
         mealRepo: MealRepository = fakeMealRepo(),
         badgeDao: FakeBadgeDao = FakeBadgeDao(),
@@ -93,6 +107,7 @@ class BadgeDetectorTest {
         goalRepo: GoalRepository = fakeGoalRepo(),
         pipBus: PipEventBus = PipEventBus(),
         challengeDao: FakeDailyChallengeDao = FakeDailyChallengeDao(),
+        mealDao: FakeMealDao = FakeMealDao(),
     ) = BadgeDetector(
         mealRepository = mealRepo,
         badgeRepository = BadgeRepository(badgeDao),
@@ -100,6 +115,7 @@ class BadgeDetectorTest {
         goalRepository = goalRepo,
         pipEventBus = pipBus,
         dailyChallengeDao = challengeDao,
+        mealDao = mealDao,
     )
 
     /** Collects events from [bus] synchronously during [block] execution. */
@@ -131,7 +147,7 @@ class BadgeDetectorTest {
         val today = 1000L
         val mealRepo = fakeMealRepo(loggedDays = listOf(today), today = today)
         val badgeDao = FakeBadgeDao()
-        val detector = makeDetector(mealRepo = mealRepo, badgeDao = badgeDao)
+        val detector = makeDetector(mealRepo = mealRepo, badgeDao = badgeDao, mealDao = FakeMealDao(count = 1))
         detector.checkAndAward()
 
         assertTrue(
@@ -145,7 +161,7 @@ class BadgeDetectorTest {
         val today = 1000L
         val mealRepo = fakeMealRepo(loggedDays = listOf(today), today = today)
         val bus = PipEventBus()
-        val detector = makeDetector(mealRepo = mealRepo, pipBus = bus)
+        val detector = makeDetector(mealRepo = mealRepo, pipBus = bus, mealDao = FakeMealDao(count = 1))
 
         val events = collectEvents(bus) { detector.checkAndAward() }
 
@@ -215,7 +231,7 @@ class BadgeDetectorTest {
         val today = 1000L
         val mealRepo = fakeMealRepo(loggedDays = listOf(today), today = today)
         val badgeDao = FakeBadgeDao()
-        val detector = makeDetector(mealRepo = mealRepo, badgeDao = badgeDao)
+        val detector = makeDetector(mealRepo = mealRepo, badgeDao = badgeDao, mealDao = FakeMealDao(count = 1))
 
         detector.checkAndAward()
         detector.checkAndAward()
@@ -255,47 +271,11 @@ class BadgeDetectorTest {
     }
 
     @Test
-    fun `GoalHit emitted when kcal exactly at goal`() = runTest {
-        val goal = DailyGoal(calories = 2000, proteinG = 100, carbsG = 250, fatG = 65)
-        val remaining = Remaining(goal = goal, totals = DayTotals(totalKcal = 2000))
-        val bus = PipEventBus()
-        val detector = makeDetector(goalRepo = fakeGoalRepo(remaining), pipBus = bus)
-
-        val events = collectEvents(bus) { detector.checkAndAward() }
-
-        assertTrue("GoalHit should be emitted when kcalRemaining == 0", events.any { it == PipEvent.GoalHit })
-    }
-
-    @Test
-    fun `GoalHit emitted when 30 kcal over goal`() = runTest {
-        val goal = DailyGoal(calories = 2000, proteinG = 100, carbsG = 250, fatG = 65)
-        val remaining = Remaining(goal = goal, totals = DayTotals(totalKcal = 2030))
-        val bus = PipEventBus()
-        val detector = makeDetector(goalRepo = fakeGoalRepo(remaining), pipBus = bus)
-
-        val events = collectEvents(bus) { detector.checkAndAward() }
-
-        assertTrue("GoalHit should be emitted when 30 kcal over goal", events.any { it == PipEvent.GoalHit })
-    }
-
-    @Test
-    fun `GoalHit NOT emitted when 500 kcal under goal`() = runTest {
-        val goal = DailyGoal(calories = 2000, proteinG = 100, carbsG = 250, fatG = 65)
-        val remaining = Remaining(goal = goal, totals = DayTotals(totalKcal = 1500))
-        val bus = PipEventBus()
-        val detector = makeDetector(goalRepo = fakeGoalRepo(remaining), pipBus = bus)
-
-        val events = collectEvents(bus) { detector.checkAndAward() }
-
-        assertFalse("GoalHit should NOT be emitted when far under goal", events.any { it == PipEvent.GoalHit })
-    }
-
-    @Test
     fun `milestone recorded when badge awarded`() = runTest {
         val today = 1000L
         val mealRepo = fakeMealRepo(loggedDays = listOf(today), today = today)
         val milestoneDao = FakeMilestoneDao()
-        val detector = makeDetector(mealRepo = mealRepo, milestoneDao = milestoneDao)
+        val detector = makeDetector(mealRepo = mealRepo, milestoneDao = milestoneDao, mealDao = FakeMealDao(count = 1))
         detector.checkAndAward()
 
         assertTrue(
