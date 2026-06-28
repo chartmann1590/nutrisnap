@@ -3,8 +3,11 @@ package com.charles.nutrisnap.di
 import android.content.Context
 import androidx.room.Room
 import com.charles.nutrisnap.data.db.AppDatabase
+import com.charles.nutrisnap.data.db.BadgeDao
 import com.charles.nutrisnap.data.db.ChatDao
+import com.charles.nutrisnap.data.db.DailyChallengeDao
 import com.charles.nutrisnap.data.db.MealDao
+import com.charles.nutrisnap.data.db.MilestoneDao
 import com.charles.nutrisnap.data.db.WeightDao
 import dagger.Module
 import dagger.Provides
@@ -21,7 +24,7 @@ object DataModule {
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "nutrisnap.db")
-            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigration()
             .build()
 
@@ -36,4 +39,16 @@ object DataModule {
     @Provides
     @Singleton
     fun provideChatDao(db: AppDatabase): ChatDao = db.chatDao()
+
+    @Provides
+    @Singleton
+    fun provideBadgeDao(db: AppDatabase): BadgeDao = db.badgeDao()
+
+    @Provides
+    @Singleton
+    fun provideDailyChallengeDao(db: AppDatabase): DailyChallengeDao = db.dailyChallengeDao()
+
+    @Provides
+    @Singleton
+    fun provideMilestoneDao(db: AppDatabase): MilestoneDao = db.milestoneDao()
 }
