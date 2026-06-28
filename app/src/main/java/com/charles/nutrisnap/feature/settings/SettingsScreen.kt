@@ -131,6 +131,31 @@ fun SettingsScreen(
 
         Spacer(Modifier.height(16.dp))
 
+        // Premium
+        NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Premium", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                if (state.premiumEntitlement.isPremium) {
+                    "Active - unlimited AI scans"
+                } else {
+                    "Free plan - 10 AI scans each month"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            state.billingMessage?.takeIf { it.isNotBlank() }?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = viewModel::restorePurchases) {
+                Text("Restore purchases")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
         // Privacy & Diagnostics
         NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
             Text("Privacy & Diagnostics", style = MaterialTheme.typography.titleMedium)
@@ -166,6 +191,10 @@ fun SettingsScreen(
                 Text("Reset analytics identifier")
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        SupportAndFeedbackSection()
 
         Spacer(Modifier.height(16.dp))
 

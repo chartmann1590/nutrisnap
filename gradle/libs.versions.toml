@@ -22,12 +22,13 @@ gson = "2.11.0"
 litertlm = "0.13.1"
 kotlinxSerialization = "1.6.3"
 coroutines = "1.8.0"
+billing = "9.1.0"
 junit = "4.13.2"
 androidxJunit = "1.1.5"
 espresso = "3.5.1"
 turbine = "1.1.0"
 mockk = "1.13.10"
-robolectric = "4.13"
+robolectric = "4.15"
 firebaseBom = "33.13.0"
 googleServicesPlugin = "4.4.2"
 crashlyticsPlugin = "3.0.3"
@@ -69,11 +70,13 @@ camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 mlkit-barcode = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkitBarcode" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 litertlm = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertlm" }
 kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlinMetadata" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }

@@ -50,16 +50,7 @@ class PipChatViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val context = PipContextBuilder.build(snapshotSource.snapshot())
-            val recent = chatRepository.recent(RECENT_HISTORY)
-            val excerpt = if (recent.isEmpty()) "" else {
-                "\n\nRecent conversation:\n" + recent.joinToString("\n") {
-                    val who = if (it.role == ChatRole.USER) "User" else "Pip"
-                    "$who: ${it.text}"
-                }
-            }
-            val systemInstruction = PipPersona.SYSTEM + "\n\n" + context + excerpt
-            session = runCatching { engine.startChat(systemInstruction) }.getOrNull()
+            session = createSession()
         }
     }
 
@@ -70,7 +61,7 @@ class PipChatViewModel @Inject constructor(
             chatRepository.append(ChatRole.USER, trimmed)
             _isGenerating.value = true
             _pipMood.value = PipMood.Thinking
-            val s = session
+            val s = session ?: createSession().also { session = it }
             try {
                 if (s == null) {
                     chatRepository.append(ChatRole.PIP, FALLBACK)
@@ -93,6 +84,19 @@ class PipChatViewModel @Inject constructor(
                 _pipMood.value = PipMood.Content
             }
         }
+    }
+
+    private suspend fun createSession(): ChatSession? {
+        val context = PipContextBuilder.build(snapshotSource.snapshot())
+        val recent = chatRepository.recent(RECENT_HISTORY)
+        val excerpt = if (recent.isEmpty()) "" else {
+            "\n\nRecent conversation:\n" + recent.joinToString("\n") {
+                val who = if (it.role == ChatRole.USER) "User" else "Pip"
+                "$who: ${it.text}"
+            }
+        }
+        val systemInstruction = PipPersona.SYSTEM + "\n\n" + context + excerpt
+        return runCatching { engine.startChat(systemInstruction) }.getOrNull()
     }
 
     override fun onCleared() {

@@ -28,7 +28,7 @@ class TrendsViewModel @Inject constructor(
     private val weightRepository: WeightRepository,
 ) : ViewModel() {
 
-    private val today = System.currentTimeMillis() / 86_400_000L
+    private val today = mealRepository.todayEpochDay()
 
     val state: StateFlow<TrendsUiState> = combine(
         mealRepository.observeWeekTotals(),

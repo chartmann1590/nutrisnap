@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.data.ModelRepository
 import com.charles.nutrisnap.data.ModelState
 import com.charles.nutrisnap.data.ModelVariant
+import com.charles.nutrisnap.data.PremiumAccess
+import com.charles.nutrisnap.data.PremiumEntitlement
 import com.charles.nutrisnap.data.ThemeMode
 import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.feature.onboarding.DailyGoal
@@ -29,6 +31,8 @@ data class SettingsUiState(
     val crashlyticsEnabled: Boolean = true,
     val performanceEnabled: Boolean = true,
     val analyticsEnabled: Boolean = true,
+    val premiumEntitlement: PremiumEntitlement = PremiumEntitlement(),
+    val billingMessage: String? = null,
 )
 
 @HiltViewModel
@@ -36,12 +40,15 @@ class SettingsViewModel @Inject constructor(
     private val app: Application,
     private val modelRepository: ModelRepository,
     private val prefs: UserPreferencesRepository,
+    private val premiumAccess: PremiumAccess,
 ) : AndroidViewModel(app) {
 
     val state: StateFlow<SettingsUiState> = combine(
         prefs.prefs,
         modelRepository.state,
-    ) { prefs, modelState ->
+        premiumAccess.entitlement,
+        premiumAccess.billingMessage,
+    ) { prefs, modelState, premiumEntitlement, billingMessage ->
         SettingsUiState(
             currentVariant = prefs.modelVariant,
             modelState = modelState,
@@ -50,6 +57,8 @@ class SettingsViewModel @Inject constructor(
             crashlyticsEnabled = prefs.crashlyticsEnabled,
             performanceEnabled = prefs.performanceEnabled,
             analyticsEnabled = prefs.analyticsEnabled,
+            premiumEntitlement = premiumEntitlement,
+            billingMessage = billingMessage,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -92,5 +101,9 @@ class SettingsViewModel @Inject constructor(
 
     fun resetFirebaseId() {
         FirebaseInstallations.getInstance().delete()
+    }
+
+    fun restorePurchases() {
+        premiumAccess.restorePurchases()
     }
 }

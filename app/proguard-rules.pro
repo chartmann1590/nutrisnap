@@ -32,9 +32,6 @@
 -dontwarn com.google.gson.**
 -keepattributes Signature, *Annotation*, EnclosingMethod
 
-# Firebase (Crashlytics, Performance, Analytics, Remote Config, FCM, In-App Messaging)
--keep class com.google.firebase.** { *; }
--dontwarn com.google.firebase.**
--dontwarn com.google.android.gms.**
--keepattributes SourceFile,LineNumberTable
--keep public class * extends java.lang.Exception
+# Feedback / GitHub models (kotlinx.serialization)
+-keep class com.charles.nutrisnap.data.feedback.** { *; }
+-keepclassmembers class com.charles.nutrisnap.data.feedback.** { *; }

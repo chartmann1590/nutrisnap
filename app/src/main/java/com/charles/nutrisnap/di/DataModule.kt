@@ -27,13 +27,13 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideChatDao(db: AppDatabase): ChatDao = db.chatDao()
-
-    @Provides
-    @Singleton
     fun provideMealDao(db: AppDatabase): MealDao = db.mealDao()
 
     @Provides
     @Singleton
     fun provideWeightDao(db: AppDatabase): WeightDao = db.weightDao()
+
+    @Provides
+    @Singleton
+    fun provideChatDao(db: AppDatabase): ChatDao = db.chatDao()
 }

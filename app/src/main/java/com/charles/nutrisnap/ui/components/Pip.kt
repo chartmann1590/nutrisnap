@@ -37,6 +37,19 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
+ * Pip's expressions. Drives posture, eyes and mouth in [Pip]. Mood-specific
+ * branches are opt-in: the `when` blocks fall back to [Content] via `else`.
+ */
+enum class PipMood {
+    Content,
+    Celebrate,
+    Proud,
+    Sleepy,
+    Stuffed,
+    Thinking,
+}
+
+/**
  * Pip — the NutriSnap mascot, a cute mango with a leaf, big eyes and rosy cheeks.
  * Drawn vectorially so it stays crisp at any size. Pip reacts to [mood]: posture,
  * eyes and mouth change per mood. Always-on touches when [animated]: a bob with

@@ -26,7 +26,7 @@ class ProfileViewModel @Inject constructor(
     weightRepository: WeightRepository,
 ) : ViewModel() {
 
-    private val today = System.currentTimeMillis() / 86_400_000L
+    private val today = mealRepository.todayEpochDay()
 
     val state: StateFlow<ProfileUiState> = combine(
         prefs.prefs,

@@ -7,8 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
 }
 
 val localProps = Properties()
@@ -19,12 +17,12 @@ if (localPropsFile.exists()) {
 
 android {
     namespace = "com.charles.nutrisnap"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.charles.nutrisnap"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 2
         versionName = "0.2.0"
 
@@ -42,6 +40,22 @@ android {
         buildConfigField("String", "MODEL_URL_E4B", "\"https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm\"")
         buildConfigField("String", "MODEL_FILE_NAME_E4B", "\"gemma-4-E4B-it.litertlm\"")
         buildConfigField("long", "MODEL_SIZE_BYTES_E4B", "3659530240L") // ~3.4 GiB (E4B)
+
+        // GitHub-backed feedback reporter — values come from local.properties (dev) or
+        // GH_API_TOKEN / GH_REPO_OWNER / GH_REPO_NAME secrets (CI). Blanks disable submission.
+        val ghToken = localProps.getProperty("github.api.token")
+            ?: providers.gradleProperty("github.api.token").orNull
+            ?: System.getenv("GH_API_TOKEN") ?: ""
+        buildConfigField("String", "GITHUB_API_TOKEN", "\"$ghToken\"")
+        val ghOwner = localProps.getProperty("github.repo.owner")
+            ?: providers.gradleProperty("github.repo.owner").orNull
+            ?: System.getenv("GH_REPO_OWNER") ?: ""
+        buildConfigField("String", "GITHUB_REPO_OWNER", "\"$ghOwner\"")
+        val ghName = localProps.getProperty("github.repo.name")
+            ?: providers.gradleProperty("github.repo.name").orNull
+            ?: System.getenv("GH_REPO_NAME") ?: ""
+        buildConfigField("String", "GITHUB_REPO_NAME", "\"$ghName\"")
+        buildConfigField("String", "FEEDBACK_ASSETS_DIR", "\"feedback-assets\"")
     }
 
     signingConfigs {
@@ -65,9 +79,6 @@ android {
         }
     }
 
-    firebaseCrashlytics {
-        mappingFileUploadEnabled = true
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -124,7 +135,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
 
@@ -155,23 +165,21 @@ dependencies {
 
     // Networking / serialization / coroutines
     implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.billing.ktx)
+
+    // Firebase diagnostics
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.firebase.perf.ktx)
 
     // Phase 4 — LiteRT-LM (Gemma 4 on-device). Maven artifact: the runtime version must
     // be new enough to load the current Gemma 4 .litertlm (multi-signature vision encoder).
     implementation(libs.litertlm)
     implementation(libs.gson)
-
-    // Firebase Spark plan
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics.ktx)
-    implementation(libs.firebase.crashlytics.ktx)
-    implementation(libs.firebase.crashlytics.ndk)
-    implementation(libs.firebase.perf.ktx)
-    implementation(libs.firebase.config.ktx)
-    implementation(libs.firebase.messaging.ktx)
-    implementation(libs.firebase.inappmessaging.display.ktx)
 
     // Tests
     testImplementation(libs.junit)

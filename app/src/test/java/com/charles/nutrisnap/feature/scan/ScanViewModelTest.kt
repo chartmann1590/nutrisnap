@@ -1,12 +1,20 @@
 package com.charles.nutrisnap.feature.scan
 
+import android.app.Activity
 import android.graphics.Bitmap
 import app.cash.turbine.test
 import com.charles.nutrisnap.ai.FakeGemmaEngine
 import com.charles.nutrisnap.data.MealRepository
+import com.charles.nutrisnap.data.PremiumAccess
+import com.charles.nutrisnap.data.PremiumEntitlement
+import com.charles.nutrisnap.data.PremiumPlan
+import com.charles.nutrisnap.data.ScanQuota
+import com.charles.nutrisnap.data.ScanQuotaRepository
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -36,21 +44,49 @@ class ScanViewModelTest {
 
     @Test
     fun `initial state is idle`() {
-        val vm = ScanViewModel(FakeGemmaEngine(), fakeMealRepo())
+        val vm = scanViewModel()
         Assert.assertTrue(vm.state.value is ScanUiState.Idle)
     }
 
     @Test
-    fun `capturing triggers analyzing state`() = runTest {
-        val vm = ScanViewModel(FakeGemmaEngine(), fakeMealRepo())
+    fun `free scan records quota usage`() = runTest {
+        val quota = FakeScanQuotaRepository()
+        val vm = scanViewModel(quota = quota)
         val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
-        vm.onCaptured(bitmap)
-        Assert.assertTrue(vm.state.value is ScanUiState.Analyzing)
+        vm.events.test {
+            vm.onCaptured(bitmap)
+            awaitItem()
+            Assert.assertEquals(1, quota.quota.value.used)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
     fun `fake analyze returns result`() = runTest {
-        val vm = ScanViewModel(FakeGemmaEngine(), fakeMealRepo())
+        val vm = scanViewModel()
+        val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+        vm.events.test {
+            vm.onCaptured(bitmap)
+            val event = awaitItem()
+            Assert.assertTrue(event is ScanEvent.NavigateToResult)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `exhausted free quota shows paywall`() = runTest {
+        val vm = scanViewModel(quota = FakeScanQuotaRepository(used = 10))
+        val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+        vm.onCaptured(bitmap)
+        Assert.assertTrue(vm.state.value is ScanUiState.Paywall)
+    }
+
+    @Test
+    fun `premium user bypasses free quota`() = runTest {
+        val vm = scanViewModel(
+            premium = FakePremiumAccess(isPremium = true),
+            quota = FakeScanQuotaRepository(used = 10),
+        )
         val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
         vm.events.test {
             vm.onCaptured(bitmap)
@@ -62,7 +98,7 @@ class ScanViewModelTest {
 
     @Test
     fun `log meal emits logged event`() = runTest {
-        val vm = ScanViewModel(FakeGemmaEngine(), fakeMealRepo())
+        val vm = scanViewModel()
         val estimate = FakeGemmaEngine()
             .analyzeFood(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
             .getOrThrow()
@@ -76,9 +112,39 @@ class ScanViewModelTest {
 
     @Test
     fun `reset state works`() {
-        val vm = ScanViewModel(FakeGemmaEngine(), fakeMealRepo())
+        val vm = scanViewModel()
         vm.resetState()
         Assert.assertTrue(vm.state.value is ScanUiState.Idle)
+    }
+}
+
+private fun scanViewModel(
+    premium: PremiumAccess = FakePremiumAccess(),
+    quota: FakeScanQuotaRepository = FakeScanQuotaRepository(),
+) = ScanViewModel(FakeGemmaEngine(), fakeMealRepo(), premium, quota)
+
+private class FakePremiumAccess(
+    isPremium: Boolean = false,
+) : PremiumAccess {
+    override val entitlement: StateFlow<PremiumEntitlement> =
+        MutableStateFlow(PremiumEntitlement(isPremium = isPremium))
+    override val plans: StateFlow<List<PremiumPlan>> = MutableStateFlow(emptyList())
+    override val billingMessage: StateFlow<String?> = MutableStateFlow(null)
+
+    override fun refresh() {}
+    override fun restorePurchases() {}
+    override fun startPurchase(activity: Activity, plan: PremiumPlan) {}
+}
+
+private class FakeScanQuotaRepository(
+    used: Int = 0,
+) : ScanQuotaRepository(null) {
+    override val quota = MutableStateFlow(ScanQuota(used = used))
+
+    override suspend fun canUseFreeScan(): Boolean = quota.value.hasFreeScans
+
+    override suspend fun recordFreeScan() {
+        quota.value = quota.value.copy(used = quota.value.used + 1)
     }
 }
 

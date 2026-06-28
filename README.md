@@ -5,57 +5,55 @@
 [![GitHub Pages](https://img.shields.io/badge/Website-Live-FF9F1C?style=flat-square)](https://chartmann1590.github.io/nutrisnap/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
 
-**Package:** `com.charles.nutrisnap` · **Min SDK:** 26 · **Target:** 34 · **Kotlin + Jetpack Compose + Material 3**
+---
+
+## What is NutriSnap?
+
+NutriSnap is a privacy-first calorie tracker that runs entirely on your device. No cameras upload to the cloud — every photo you snap stays on your phone.
+
+**Snap a meal → Pip identifies your food → see calories and macros instantly.**
 
 ---
 
-## Website
+## Features
 
-The marketing/landing site is in [`docs/`](docs/) and hosted on **GitHub Pages**:
+- **AI-powered food recognition** — Snap any meal and Pip identifies what's on your plate
+- **100% offline** — Everything runs on-device. No internet? No problem. Your data never leaves your phone.
+- **Calorie & macro estimates** — Get calories, protein, carbs, and fat for each meal
+- **Daily rings** — Track calories, protein, and hydration goals at a glance
+- **Meal diary & history** — Browse past entries, spot trends, and log manually or by barcode
+- **Streaks & progress** — Stay motivated with streak tracking and weight trends
+- **Fully customizable** — Set your own goals, units, and dietary preferences
+- **Material You** — Clean, modern Android design that adapts to your device
+- **Gboard sticker pack** — A companion sticker pack to share your NutriSnap journey with friends
 
-**[https://chartmann1590.github.io/nutrisnap/](https://chartmann1590.github.io/nutrisnap/)**
+---
 
-Includes:
-- Product landing page (hero, features, how-it-works, screenshots gallery, FAQ)
-- [Privacy Policy](https://chartmann1590.github.io/nutrisnap/privacy-policy.html) — Play-Store-ready
-- [Terms of Service](https://chartmann1590.github.io/nutrisnap/terms-of-service.html)
-- Self-hosted fonts (Fredoka + Nunito) — no third-party requests
-- Snackable design system (Mango #FF9F1C, Cocoa, Berry palette)
+## Get Started
 
-## App
+[**Visit the website**](https://chartmann1590.github.io/nutrisnap/) to learn more, see screenshots, or download the app.
 
-A single-module Android app with on-device AI (Gemma 4 via LiteRT-LM):
+NutriSnap requires a device with **6 GB+ RAM** to run the on-device AI model.
 
-```
-com.charles.nutrisnap/
-├── ai/           GemmaEngine + LiteRT-LM implementation
-├── data/         Room DB, DataStore, repositories
-├── download/     Resumable model download (WorkManager + OkHttp)
-├── feature/
-│   ├── onboarding/    Goal questionnaire + model download
-│   ├── scan/          Camera capture + AI inference
-│   ├── dashboard/     Daily rings + meal log
-│   ├── history/       Diary, trends, streaks, weight
-│   ├── entry/         Manual + barcode entry
-│   ├── profile/       Profile settings
-│   └── settings/      Goals, units, model management
-├── di/           Hilt modules
-└── ui/           Theme, components, nav
-```
+---
 
-### Build
+## Privacy
 
-```bash
-./gradlew :app:assembleDebug
-./gradlew test
-```
+NutriSnap is designed with privacy as a core principle:
 
-Requires a physical device (6 GB+ RAM) for the on-device AI model.
+- **All AI inference happens on-device** — your food photos never leave your phone
+- **No account required** — no sign-up, and meal data stays local
+- **Freemium access** — core tracking is free, with optional NutriSnap Premium for unlimited AI scans via Google Play
+- **Transparent** — read the [Privacy Policy](https://chartmann1590.github.io/nutrisnap/privacy-policy.html) and [Terms of Service](https://chartmann1590.github.io/nutrisnap/terms-of-service.html)
+
+---
 
 ## Design
 
-Stitch screens and design references in [`design/`](design/). The "Snackable" design system was created via **Google Stitch** and translated into a Compose theme.
+NutriSnap's "Snackable" design system features a warm Mango (#FF9F1C) palette with clean typography (Fredoka + Nunito). The full design is available in [`design/`](design/).
+
+---
 
 ## License
 
-The app source is Apache 2.0. The Gemma 4 model is subject to the [Gemma License](https://ai.google.dev/gemma/terms).
+The app source is **Apache 2.0**. The Gemma 4 model is subject to the [Gemma License](https://ai.google.dev/gemma/terms).

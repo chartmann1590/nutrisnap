@@ -12,17 +12,11 @@ import javax.inject.Singleton
 open class MealRepository @Inject constructor(
     private val mealDao: MealDao?,
 ) {
-    private companion object {
-        private const val MS_PER_DAY = 86_400_000L
-    }
+    private fun epochDayToMs(epochDay: Long): Pair<Long, Long> =
+        localDayRangeMs(epochDay)
 
-    private fun epochDayToMs(epochDay: Long): Pair<Long, Long> {
-        val startMs = epochDay * MS_PER_DAY
-        return startMs to startMs + MS_PER_DAY
-    }
-
-    private fun todayEpochDay(): Long =
-        System.currentTimeMillis() / MS_PER_DAY
+    /** Today as a local epoch-day (local calendar day, not UTC). */
+    open fun todayEpochDay(): Long = localEpochDay()
 
     open fun observeMealsForDay(epochDay: Long): Flow<List<MealEntity>> {
         val (startMs, endMs) = epochDayToMs(epochDay)
@@ -42,13 +36,13 @@ open class MealRepository @Inject constructor(
 
     open fun observeWeekTotals(): Flow<List<DayTotalsWithEpochDay>> {
         val today = todayEpochDay()
-        val startMs = (today - 6) * MS_PER_DAY
-        val endMs = (today + 1) * MS_PER_DAY
-        return mealDao!!.observeDayTotalsRange(startMs, endMs)
+        val (startMs, _) = epochDayToMs(today - 6)
+        val (_, endMs) = epochDayToMs(today)
+        return mealDao!!.observeDayTotalsRange(startMs, endMs, tzOffsetMs())
     }
 
     open fun observeDistinctLoggedDays(): Flow<List<Long>> =
-        mealDao!!.observeDistinctLoggedDays()
+        mealDao!!.observeDistinctLoggedLocalDays(tzOffsetMs())
 
     open suspend fun logMeal(meal: MealEntity): Long = mealDao!!.insert(meal)
 

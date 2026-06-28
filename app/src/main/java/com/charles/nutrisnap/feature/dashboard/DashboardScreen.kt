@@ -25,7 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +61,7 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showConfetti by remember { mutableStateOf(false) }
-    var lastCelebratedMealMs by rememberSaveable { mutableStateOf(0L) }
+    var previousMealCount by remember { mutableStateOf(state.todayMeals.size) }
 
     LaunchedEffect(state.streak) {
         if (state.streak > 0 && state.streak % 7 == 0) {
@@ -77,13 +76,8 @@ fun DashboardScreen(
         }
     }
 
-    LaunchedEffect(state.todayMeals) {
-        val newestMealMs = state.todayMeals.maxOfOrNull { it.timestampMs } ?: 0L
-        val isFresh = System.currentTimeMillis() - newestMealMs < 10_000L
-        if (newestMealMs > lastCelebratedMealMs && isFresh) {
-            lastCelebratedMealMs = newestMealMs
-            showConfetti = true
-        }
+    LaunchedEffect(state.todayMeals.size) {
+        previousMealCount = state.todayMeals.size
     }
 
     Box(modifier = modifier.fillMaxSize()) {

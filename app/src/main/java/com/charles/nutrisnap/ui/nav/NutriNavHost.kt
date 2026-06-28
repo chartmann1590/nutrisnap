@@ -22,8 +22,8 @@ import com.charles.nutrisnap.feature.onboarding.DownloadScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingEvent
 import com.charles.nutrisnap.feature.onboarding.OnboardingScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingViewModel
-import com.charles.nutrisnap.feature.profile.ProfileScreen
 import com.charles.nutrisnap.feature.pip.PipChatScreen
+import com.charles.nutrisnap.feature.profile.ProfileScreen
 import com.charles.nutrisnap.feature.scan.ScanResultScreen
 import com.charles.nutrisnap.feature.scan.ScanScreen
 import com.charles.nutrisnap.feature.settings.SettingsScreen
