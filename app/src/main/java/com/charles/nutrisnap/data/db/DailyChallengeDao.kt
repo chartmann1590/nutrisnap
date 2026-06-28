@@ -14,6 +14,12 @@ interface DailyChallengeDao {
     @Query("SELECT * FROM daily_challenges WHERE dateEpochDay = :day")
     suspend fun getForDay(day: Long): DailyChallengeEntity?
 
+    @Query("SELECT * FROM daily_challenges WHERE dateEpochDay = :day")
+    fun observeForDay(day: Long): Flow<DailyChallengeEntity?>
+
     @Query("SELECT * FROM daily_challenges WHERE completedAtMs IS NOT NULL")
     fun getCompleted(): Flow<List<DailyChallengeEntity>>
+
+    @Query("SELECT COUNT(*) FROM daily_challenges WHERE completedAtMs IS NOT NULL")
+    suspend fun countCompleted(): Int
 }
