@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.charles.nutrisnap.feature.onboarding.DailyGoal
+import com.charles.nutrisnap.ui.components.PipAccessory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -43,6 +44,9 @@ open class UserPreferencesRepository @Inject constructor(
         val CRASHLYTICS_ENABLED = booleanPreferencesKey("crashlytics_enabled")
         val PERFORMANCE_ENABLED = booleanPreferencesKey("performance_enabled")
         val ANALYTICS_ENABLED = booleanPreferencesKey("analytics_enabled")
+        val PIP_SOUNDS_ENABLED = booleanPreferencesKey("pip_sounds_enabled")
+        val PIP_VOICE_ENABLED = booleanPreferencesKey("pip_voice_enabled")
+        val PIP_ACCESSORY = stringPreferencesKey("pip_accessory")
     }
 
     open val prefs: Flow<UserPrefs> by lazy { dataStore!!.data.map { p ->
@@ -107,4 +111,14 @@ open class UserPreferencesRepository @Inject constructor(
     open suspend fun setAnalyticsEnabled(enabled: Boolean) {
         dataStore!!.edit { it[Keys.ANALYTICS_ENABLED] = enabled }
     }
+
+    open val pipSoundsEnabled: Flow<Boolean> = dataStore!!.data.map { p -> p[Keys.PIP_SOUNDS_ENABLED] ?: true }
+    open val pipVoiceEnabled: Flow<Boolean> = dataStore!!.data.map { p -> p[Keys.PIP_VOICE_ENABLED] ?: false }
+    open val pipAccessory: Flow<PipAccessory> = dataStore!!.data.map { p ->
+        runCatching { PipAccessory.valueOf(p[Keys.PIP_ACCESSORY] ?: "NONE") }.getOrDefault(PipAccessory.NONE)
+    }
+
+    open suspend fun setPipSoundsEnabled(enabled: Boolean) { dataStore!!.edit { it[Keys.PIP_SOUNDS_ENABLED] = enabled } }
+    open suspend fun setPipVoiceEnabled(enabled: Boolean) { dataStore!!.edit { it[Keys.PIP_VOICE_ENABLED] = enabled } }
+    open suspend fun setPipAccessory(accessory: PipAccessory) { dataStore!!.edit { it[Keys.PIP_ACCESSORY] = accessory.name } }
 }
