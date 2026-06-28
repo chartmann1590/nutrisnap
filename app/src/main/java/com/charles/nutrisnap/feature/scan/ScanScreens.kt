@@ -1,6 +1,9 @@
 package com.charles.nutrisnap.feature.scan
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -35,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,6 +57,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.nutrisnap.data.MONTHLY_BASE_PLAN_ID
+import com.charles.nutrisnap.data.PremiumPlan
+import com.charles.nutrisnap.data.ScanQuota
+import com.charles.nutrisnap.data.YEARLY_BASE_PLAN_ID
 import com.charles.nutrisnap.data.db.MealType
 import com.charles.nutrisnap.ui.components.ConfidencePill
 import com.charles.nutrisnap.ui.components.MacroTile
@@ -75,6 +83,7 @@ fun ScanScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val accessState by viewModel.accessState.collectAsStateWithLifecycle()
     var flashEnabled by remember { mutableStateOf(false) }
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -153,6 +162,13 @@ fun ScanScreen(
                 .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(50)).size(44.dp),
         ) { Icon(Icons.Rounded.Close, "Close", tint = Color.White) }
 
+        if (!accessState.isPremium) {
+            QuotaBadge(
+                quota = accessState.quota,
+                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
+            )
+        }
+
         IconButton(
             onClick = { galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
             modifier = Modifier
@@ -202,7 +218,7 @@ fun ScanScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Pip(size = 110.dp, animated = true)
+                Pip(size = 110.dp, mood = com.charles.nutrisnap.ui.components.PipMood.Thinking, animated = true)
                 Spacer(Modifier.height(20.dp))
                 Text(
                     "Analyzing your food…",
@@ -220,7 +236,119 @@ fun ScanScreen(
                 )
             }
         }
+
+        if (state is ScanUiState.Paywall) {
+            PremiumPaywall(
+                plans = accessState.plans,
+                billingMessage = accessState.billingMessage,
+                onBuy = { plan ->
+                    context.findActivity()?.let { viewModel.buyPremium(it, plan) }
+                },
+                onRestore = viewModel::restorePurchases,
+                onClose = viewModel::resetState,
+            )
+        }
     }
+}
+
+@Composable
+private fun QuotaBadge(
+    quota: ScanQuota,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(Color.Black.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            "${quota.remaining}/${quota.limit} free scans",
+            style = MaterialTheme.typography.labelLarge,
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
+private fun PremiumPaywall(
+    plans: List<PremiumPlan>,
+    billingMessage: String?,
+    onBuy: (PremiumPlan) -> Unit,
+    onRestore: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val yearly = plans.firstOrNull { it.basePlanId == YEARLY_BASE_PLAN_ID }
+    val monthly = plans.firstOrNull { it.basePlanId == MONTHLY_BASE_PLAN_ID }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.84f))
+            .padding(20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        NutriCard(cornerRadius = 24.dp, padding = 20.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("NutriSnap Premium", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "You used your free AI scans for this month. Upgrade for unlimited on-device meal scans.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(16.dp))
+
+            PlanButton(
+                title = "Yearly",
+                fallbackPrice = "$39.99/year",
+                plan = yearly,
+                onBuy = onBuy,
+            )
+            Spacer(Modifier.height(10.dp))
+            PlanButton(
+                title = "Monthly",
+                fallbackPrice = "$4.99/month",
+                plan = monthly,
+                onBuy = onBuy,
+            )
+
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Subscription renews automatically through Google Play unless canceled.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            billingMessage?.takeIf { it.isNotBlank() }?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = onRestore) { Text("Restore purchases") }
+                TextButton(onClick = onClose) { Text("Maybe later") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlanButton(
+    title: String,
+    fallbackPrice: String,
+    plan: PremiumPlan?,
+    onBuy: (PremiumPlan) -> Unit,
+) {
+    PrimaryButton(
+        text = "$title - ${plan?.formattedPrice ?: fallbackPrice}",
+        onClick = { plan?.let(onBuy) },
+        enabled = plan != null,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 @Composable

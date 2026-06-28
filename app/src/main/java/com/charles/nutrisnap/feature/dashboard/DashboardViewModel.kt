@@ -38,7 +38,7 @@ class DashboardViewModel @Inject constructor(
         mealRepository.observeDistinctLoggedDays(),
         prefs.prefs,
     ) { remaining, ring, meals, loggedDays, userPrefs ->
-        val today = System.currentTimeMillis() / 86_400_000L
+        val today = mealRepository.todayEpochDay()
         DashboardUiState(
             remaining = remaining,
             ringProgress = ring,

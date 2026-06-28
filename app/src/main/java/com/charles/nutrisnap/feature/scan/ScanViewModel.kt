@@ -1,24 +1,33 @@
 package com.charles.nutrisnap.feature.scan
 
 import android.graphics.Bitmap
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.ai.FoodEstimate
 import com.charles.nutrisnap.ai.GemmaEngine
 import com.charles.nutrisnap.data.MealRepository
+import com.charles.nutrisnap.data.PremiumAccess
+import com.charles.nutrisnap.data.PremiumEntitlement
+import com.charles.nutrisnap.data.PremiumPlan
+import com.charles.nutrisnap.data.ScanQuota
+import com.charles.nutrisnap.data.ScanQuotaRepository
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
@@ -36,7 +45,21 @@ sealed interface ScanUiState {
     data object Capturing : ScanUiState
     data object Analyzing : ScanUiState
     data class Result(val estimate: FoodEstimate) : ScanUiState
+    data object Paywall : ScanUiState
     data class Error(val message: String) : ScanUiState
+}
+
+data class ScanAccessUiState(
+    val entitlement: PremiumEntitlement = PremiumEntitlement(),
+    val quota: ScanQuota = ScanQuota(),
+    val plans: List<PremiumPlan> = emptyList(),
+    val billingMessage: String? = null,
+) {
+    val isPremium: Boolean
+        get() = entitlement.isPremium
+
+    val canUseAiScan: Boolean
+        get() = isPremium || quota.hasFreeScans
 }
 
 sealed interface ScanEvent {
@@ -82,6 +105,8 @@ object EstimateCache {
 class ScanViewModel @Inject constructor(
     private val gemmaEngine: GemmaEngine,
     private val mealRepository: MealRepository,
+    private val premiumAccess: PremiumAccess,
+    private val scanQuotaRepository: ScanQuotaRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ScanUiState>(ScanUiState.Idle)
@@ -89,6 +114,24 @@ class ScanViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<ScanEvent>()
     val events: SharedFlow<ScanEvent> = _events.asSharedFlow()
+
+    val accessState: StateFlow<ScanAccessUiState> = combine(
+        premiumAccess.entitlement,
+        scanQuotaRepository.quota,
+        premiumAccess.plans,
+        premiumAccess.billingMessage,
+    ) { entitlement, quota, plans, billingMessage ->
+        ScanAccessUiState(
+            entitlement = entitlement,
+            quota = quota,
+            plans = plans,
+            billingMessage = billingMessage,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ScanAccessUiState(),
+    )
 
     /** Compile the on-device engine ahead of time so the first analysis isn't a cold start. */
     fun warmUp() {
@@ -99,10 +142,21 @@ class ScanViewModel @Inject constructor(
     }
 
     fun onCaptured(bitmap: Bitmap, hint: String? = null) {
-        _state.value = ScanUiState.Analyzing
-        val bitmapKey = BitmapCache.put(bitmap)
-        viewModelScope.launch(Dispatchers.Default) {
-            val result = gemmaEngine.analyzeFood(bitmap.downscaleForInference(), hint)
+        viewModelScope.launch {
+            val isPremium = premiumAccess.entitlement.value.isPremium
+            if (!isPremium && !scanQuotaRepository.canUseFreeScan()) {
+                _state.value = ScanUiState.Paywall
+                return@launch
+            }
+
+            _state.value = ScanUiState.Analyzing
+            val bitmapKey = BitmapCache.put(bitmap)
+            val result = withContext(Dispatchers.Default) {
+                gemmaEngine.analyzeFood(bitmap.downscaleForInference(), hint)
+            }
+            if (!isPremium) {
+                scanQuotaRepository.recordFreeScan()
+            }
             result.onSuccess { estimate ->
                 if (estimate.confidence < 0.5f) {
                     _state.value = ScanUiState.Idle
@@ -117,6 +171,14 @@ class ScanViewModel @Inject constructor(
                 _events.emit(ScanEvent.NavigateToEntry("scan_fallback", bitmapKey))
             }
         }
+    }
+
+    fun buyPremium(activity: Activity, plan: PremiumPlan) {
+        premiumAccess.startPurchase(activity, plan)
+    }
+
+    fun restorePurchases() {
+        premiumAccess.restorePurchases()
     }
 
     fun onAnalyzed(bitmapKey: String, estimate: FoodEstimate) {

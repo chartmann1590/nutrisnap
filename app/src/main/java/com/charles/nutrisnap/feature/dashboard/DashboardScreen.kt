@@ -41,6 +41,8 @@ import com.charles.nutrisnap.ui.components.ConfettiBurst
 import com.charles.nutrisnap.ui.components.EmptyState
 import com.charles.nutrisnap.ui.components.MacroBar
 import com.charles.nutrisnap.ui.components.NutriCard
+import com.charles.nutrisnap.ui.components.Pip
+import com.charles.nutrisnap.ui.components.PipMood
 import com.charles.nutrisnap.ui.components.StreakPill
 import com.charles.nutrisnap.ui.theme.NutriTheme
 import kotlinx.coroutines.delay
@@ -53,6 +55,7 @@ fun DashboardScreen(
     onOpenMeal: (Long) -> Unit = {},
     onAddMeal: () -> Unit = {},
     onOpenSettings: () -> Unit,
+    onOpenPipChat: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -86,7 +89,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                HeaderSection(state)
+                HeaderSection(state, celebrating = showConfetti, onPipTap = onOpenPipChat)
             }
 
             item {
@@ -110,6 +113,7 @@ fun DashboardScreen(
                         title = "No meals yet",
                         subtitle = "Snap a photo to get started!",
                         modifier = Modifier,
+                        mood = PipMood.Sleepy,
                     )
                 }
             } else {
@@ -124,8 +128,11 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeaderSection(state: DashboardUiState) {
+private fun HeaderSection(state: DashboardUiState, celebrating: Boolean, onPipTap: () -> Unit) {
+    val mood = if (celebrating) PipMood.Celebrate else pipMoodFor(state)
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Pip(size = 56.dp, mood = mood, animated = true, onPoke = onPipTap)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("Hey there!", style = MaterialTheme.typography.headlineMedium)
             Text(

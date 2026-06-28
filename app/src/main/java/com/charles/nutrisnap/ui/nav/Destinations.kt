@@ -21,6 +21,7 @@ object Routes {
     const val ENTRY = "entry/{mode}?bitmapKey={bitmapKey}"
     const val EDIT_MEAL = "edit_meal/{mealId}"
     const val SETTINGS = "settings"
+    const val PIP_CHAT = "pip_chat"
 
     fun scanResult(estimateKey: String) = "scan_result/$estimateKey"
     fun entry(mode: String, bitmapKey: String? = null) =

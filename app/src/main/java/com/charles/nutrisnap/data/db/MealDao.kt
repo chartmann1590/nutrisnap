@@ -56,8 +56,8 @@ interface MealDao {
     fun observeDayTotals(startMs: Long, endMs: Long): Flow<DayTotals>
 
     @Query("""
-        SELECT 
-            timestampMs / 86400000 AS epochDay,
+        SELECT
+            (timestampMs + :offsetMs) / 86400000 AS epochDay,
             COALESCE(SUM(totalKcal), 0) AS totalKcal,
             COALESCE(SUM(proteinG), 0) AS proteinG,
             COALESCE(SUM(carbsG), 0) AS carbsG,
@@ -67,12 +67,12 @@ interface MealDao {
         GROUP BY epochDay
         ORDER BY epochDay ASC
     """)
-    fun observeDayTotalsRange(startMs: Long, endMs: Long): Flow<List<DayTotalsWithEpochDay>>
+    fun observeDayTotalsRange(startMs: Long, endMs: Long, offsetMs: Long): Flow<List<DayTotalsWithEpochDay>>
 
     @Query("""
-        SELECT DISTINCT timestampMs / 86400000 AS epochDay 
-        FROM meal_entity 
+        SELECT DISTINCT (timestampMs + :offsetMs) / 86400000 AS epochDay
+        FROM meal_entity
         ORDER BY epochDay DESC
     """)
-    fun observeDistinctLoggedDays(): Flow<List<Long>>
+    fun observeDistinctLoggedLocalDays(offsetMs: Long): Flow<List<Long>>
 }

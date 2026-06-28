@@ -284,7 +284,7 @@ private fun WeekBarChart(weekTotals: List<DayTotalsWithEpochDay>) {
     val barColor = MaterialTheme.colorScheme.primary
 
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        val today = System.currentTimeMillis() / 86_400_000L
+        val today = com.charles.nutrisnap.data.localEpochDay()
         val dayLabels = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
         Row(
@@ -295,8 +295,9 @@ private fun WeekBarChart(weekTotals: List<DayTotalsWithEpochDay>) {
             ((today - 6)..today).forEach { day ->
                 val total = weekTotals.find { it.epochDay == day }?.totalKcal ?: 0
                 val fraction = (total.toFloat() / maxKcal).coerceIn(0f, 1f)
+                val (dayStartMs, _) = com.charles.nutrisnap.data.localDayRangeMs(day)
                 val dayOfWeek = java.util.Calendar.getInstance().apply {
-                    timeInMillis = day * 86_400_000L
+                    timeInMillis = dayStartMs + com.charles.nutrisnap.data.MS_PER_DAY / 2
                 }.get(java.util.Calendar.DAY_OF_WEEK)
                 val label = when (dayOfWeek) {
                     java.util.Calendar.MONDAY -> "Mon"
@@ -327,5 +328,6 @@ private fun WeekBarChart(weekTotals: List<DayTotalsWithEpochDay>) {
 
 private fun formatDate(epochDay: Long): String {
     val sdf = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
-    return sdf.format(Date(epochDay * 86_400_000L))
+    val (startMs, _) = com.charles.nutrisnap.data.localDayRangeMs(epochDay)
+    return sdf.format(Date(startMs))
 }

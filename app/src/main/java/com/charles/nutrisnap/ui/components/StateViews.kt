@@ -27,13 +27,14 @@ fun EmptyState(
     title: String,
     subtitle: String?,
     modifier: Modifier,
+    mood: PipMood = PipMood.Sleepy,
 ) {
     Column(
         modifier = modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Pip(size = pipSize, animated = true)
+        Pip(size = pipSize, mood = mood, animated = true)
         Spacer(Modifier.height(16.dp))
         Text(title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
         if (subtitle != null) {

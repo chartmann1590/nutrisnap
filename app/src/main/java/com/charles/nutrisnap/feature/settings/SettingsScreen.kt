@@ -12,9 +12,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -128,6 +131,89 @@ fun SettingsScreen(
 
         Spacer(Modifier.height(16.dp))
 
+        // Premium
+        NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Premium", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                if (state.premiumEntitlement.isPremium) {
+                    "Active - unlimited AI scans"
+                } else {
+                    "Free plan - 10 AI scans each month"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            state.billingMessage?.takeIf { it.isNotBlank() }?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = viewModel::restorePurchases) {
+                Text("Restore purchases")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Privacy & Diagnostics
+        NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Privacy & Diagnostics", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+
+            SettingToggle(
+                label = "Crashlytics (crash reports)",
+                checked = state.crashlyticsEnabled,
+                onCheckedChange = viewModel::setCrashlyticsEnabled,
+            )
+            Spacer(Modifier.height(8.dp))
+            SettingToggle(
+                label = "Performance Monitoring",
+                checked = state.performanceEnabled,
+                onCheckedChange = viewModel::setPerformanceEnabled,
+            )
+            Spacer(Modifier.height(8.dp))
+            SettingToggle(
+                label = "Analytics (usage data)",
+                checked = state.analyticsEnabled,
+                onCheckedChange = viewModel::setAnalyticsEnabled,
+            )
+
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Disabling these does not affect your tracking — only diagnostic data stops being sent.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(Modifier.height(12.dp))
+            TextButton(onClick = viewModel::resetFirebaseId) {
+                Text("Reset analytics identifier")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        SupportAndFeedbackSection()
+
+        Spacer(Modifier.height(16.dp))
+
         Text("All data stays on this device. Powered by Gemma 4.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun SettingToggle(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

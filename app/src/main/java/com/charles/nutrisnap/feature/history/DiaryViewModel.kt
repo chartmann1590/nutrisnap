@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.data.GoalRepository
 import com.charles.nutrisnap.data.MealRepository
 import com.charles.nutrisnap.data.Remaining
+import com.charles.nutrisnap.data.localEpochDay
 import com.charles.nutrisnap.data.db.DayTotals
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealType
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class DiaryUiState(
-    val epochDay: Long = System.currentTimeMillis() / 86_400_000L,
+    val epochDay: Long = localEpochDay(),
     val mealsByType: Map<MealType, List<MealEntity>> = emptyMap(),
     val dayTotal: DayTotals = DayTotals(),
     val remaining: Remaining? = null,
@@ -32,7 +33,7 @@ class DiaryViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
 ) : ViewModel() {
 
-    private val _epochDay = MutableStateFlow(System.currentTimeMillis() / 86_400_000L)
+    private val _epochDay = MutableStateFlow(mealRepository.todayEpochDay())
     val epochDay: StateFlow<Long> = _epochDay.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)

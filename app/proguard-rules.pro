@@ -31,3 +31,7 @@
 -keep class com.google.gson.** { *; }
 -dontwarn com.google.gson.**
 -keepattributes Signature, *Annotation*, EnclosingMethod
+
+# Feedback / GitHub models (kotlinx.serialization)
+-keep class com.charles.nutrisnap.data.feedback.** { *; }
+-keepclassmembers class com.charles.nutrisnap.data.feedback.** { *; }

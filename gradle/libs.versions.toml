@@ -22,12 +22,16 @@ gson = "2.11.0"
 litertlm = "0.13.1"
 kotlinxSerialization = "1.6.3"
 coroutines = "1.8.0"
+billing = "9.1.0"
 junit = "4.13.2"
 androidxJunit = "1.1.5"
 espresso = "3.5.1"
 turbine = "1.1.0"
 mockk = "1.13.10"
-robolectric = "4.13"
+robolectric = "4.15"
+firebaseBom = "33.13.0"
+googleServicesPlugin = "4.4.2"
+crashlyticsPlugin = "3.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +46,7 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -65,11 +70,13 @@ camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 mlkit-barcode = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkitBarcode" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 litertlm = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertlm" }
 kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlinMetadata" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
@@ -82,9 +89,23 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
+# Firebase Spark plan
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-crashlytics-ndk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
+firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx" }
+firebase-config-ktx = { group = "com.google.firebase", name = "firebase-config-ktx" }
+firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebase-inappmessaging-display-ktx = { group = "com.google.firebase", name = "firebase-inappmessaging-display-ktx" }
+
+# Firebase Gradle plugins (classpath resolved via version catalog plugins block)
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsPlugin" }

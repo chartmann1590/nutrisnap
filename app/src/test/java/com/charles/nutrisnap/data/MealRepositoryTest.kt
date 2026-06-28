@@ -20,6 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.util.TimeZone
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -46,9 +47,9 @@ class MealRepositoryTest {
 
     @Test
     fun `log and observe meals for day`() = runTest {
-        val epochDay = System.currentTimeMillis() / 86400000L
+        val epochDay = localEpochDay()
         val meal = MealEntity(
-            timestampMs = epochDay * 86400000L + 3600000,
+            timestampMs = localDayRangeMs(epochDay).first + 3600000,
             mealType = MealType.BREAKFAST,
             name = "Oatmeal",
             totalKcal = 350,
@@ -69,8 +70,8 @@ class MealRepositoryTest {
 
     @Test
     fun `day totals match logged meals`() = runTest {
-        val epochDay = System.currentTimeMillis() / 86400000L
-        val dayStart = epochDay * 86400000L
+        val epochDay = localEpochDay()
+        val dayStart = localDayRangeMs(epochDay).first
         repo.logMeal(
             MealEntity(
                 timestampMs = dayStart + 1, mealType = MealType.BREAKFAST, name = "A",
@@ -96,10 +97,10 @@ class MealRepositoryTest {
 
     @Test
     fun `delete meal removes it`() = runTest {
-        val epochDay = System.currentTimeMillis() / 86400000L
+        val epochDay = localEpochDay()
         val id = repo.logMeal(
             MealEntity(
-                timestampMs = epochDay * 86400000L,
+                timestampMs = localDayRangeMs(epochDay).first,
                 mealType = MealType.SNACK,
                 name = "Chips",
                 totalKcal = 150,
@@ -118,10 +119,40 @@ class MealRepositoryTest {
     }
 
     @Test
+    fun `meal logged late evening local time buckets under local day not utc`() = runTest {
+        // Reproduces the "History tab blank" bug: with UTC day-keys, an evening meal
+        // west of UTC lands on the next epoch-day and vanishes from today's diary.
+        val previous = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York")) // UTC-5 / -4
+        try {
+            val day = localEpochDay()
+            // 23:00 local — this instant is already the *next* calendar day in UTC.
+            val elevenPmLocal = localDayRangeMs(day).first + 23 * 3_600_000L
+            repo.logMeal(
+                MealEntity(
+                    timestampMs = elevenPmLocal, mealType = MealType.DINNER, name = "Late dinner",
+                    totalKcal = 600, proteinG = 30, carbsG = 40, fatG = 25, source = MealSource.MANUAL,
+                )
+            )
+
+            repo.observeMealsForDay(day).test {
+                assertEquals("meal must appear under the local day it was logged", 1, awaitItem().size)
+                cancelAndIgnoreRemainingEvents()
+            }
+            repo.observeMealsForDay(day + 1).test {
+                assertTrue("meal must NOT leak into the next (UTC) day", awaitItem().isEmpty())
+                cancelAndIgnoreRemainingEvents()
+            }
+        } finally {
+            TimeZone.setDefault(previous)
+        }
+    }
+
+    @Test
     fun `distinct logged days`() = runTest {
-        val today = System.currentTimeMillis() / 86400000L
-        val yesterdayStart = (today - 1) * 86400000L
-        val todayStart = today * 86400000L
+        val today = localEpochDay()
+        val yesterdayStart = localDayRangeMs(today - 1).first
+        val todayStart = localDayRangeMs(today).first
         repo.logMeal(
             MealEntity(
                 timestampMs = yesterdayStart + 1, mealType = MealType.DINNER, name = "X",

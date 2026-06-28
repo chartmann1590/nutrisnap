@@ -1,6 +1,9 @@
 package com.charles.nutrisnap.ai
 
 import android.graphics.Bitmap
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Fake engine for debug/preview use — returns a fixed plausible estimate.
@@ -51,4 +54,18 @@ class FakeGemmaEngine : GemmaEngine {
     }
 
     override fun isReady(): Boolean = ready
+
+    /** When true, chat streams fail (for testing the ViewModel's error path). */
+    var chatShouldFail: Boolean = false
+
+    override suspend fun startChat(systemInstruction: String): ChatSession {
+        ready = true
+        val fail = chatShouldFail
+        return object : ChatSession {
+            override fun sendStreaming(userText: String): Flow<String> =
+                if (fail) flow { throw RuntimeException("chat failure") }
+                else flowOf("Hey", "Hey there", "Hey there!")
+            override fun close() {}
+        }
+    }
 }
