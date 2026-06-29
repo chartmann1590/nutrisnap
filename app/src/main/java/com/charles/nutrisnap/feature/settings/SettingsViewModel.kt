@@ -10,6 +10,8 @@ import com.charles.nutrisnap.data.PremiumAccess
 import com.charles.nutrisnap.data.PremiumEntitlement
 import com.charles.nutrisnap.data.ThemeMode
 import com.charles.nutrisnap.data.UserPreferencesRepository
+import com.charles.nutrisnap.data.WeightRepository
+import com.charles.nutrisnap.data.db.WeightEntryEntity
 import com.charles.nutrisnap.feature.onboarding.DailyGoal
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -27,6 +29,7 @@ data class SettingsUiState(
     val currentVariant: ModelVariant = ModelVariant.E2B,
     val modelState: ModelState = ModelState.NotDownloaded,
     val goal: DailyGoal? = null,
+    val latestWeightKg: Double? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val crashlyticsEnabled: Boolean = true,
     val performanceEnabled: Boolean = true,
@@ -41,6 +44,7 @@ class SettingsViewModel @Inject constructor(
     private val modelRepository: ModelRepository,
     private val prefs: UserPreferencesRepository,
     private val premiumAccess: PremiumAccess,
+    private val weightRepository: WeightRepository,
 ) : AndroidViewModel(app) {
 
     val state: StateFlow<SettingsUiState> = combine(
@@ -48,11 +52,13 @@ class SettingsViewModel @Inject constructor(
         modelRepository.state,
         premiumAccess.entitlement,
         premiumAccess.billingMessage,
-    ) { prefs, modelState, premiumEntitlement, billingMessage ->
+        weightRepository.observeLatest(),
+    ) { prefs, modelState, premiumEntitlement, billingMessage, weight ->
         SettingsUiState(
             currentVariant = prefs.modelVariant,
             modelState = modelState,
             goal = prefs.goal,
+            latestWeightKg = weight?.weightKg,
             themeMode = prefs.themeMode,
             crashlyticsEnabled = prefs.crashlyticsEnabled,
             performanceEnabled = prefs.performanceEnabled,
@@ -65,6 +71,19 @@ class SettingsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = SettingsUiState(),
     )
+
+    fun saveGoal(calories: Int, proteinG: Int, carbsG: Int, fatG: Int) {
+        viewModelScope.launch {
+            prefs.saveGoal(DailyGoal(calories = calories, proteinG = proteinG, carbsG = carbsG, fatG = fatG))
+        }
+    }
+
+    fun saveWeight(kg: Double) {
+        viewModelScope.launch {
+            val today = java.time.LocalDate.now().toEpochDay()
+            weightRepository.logWeight(WeightEntryEntity(dateEpochDay = today, weightKg = kg))
+        }
+    }
 
     fun setVariant(variant: ModelVariant) {
         viewModelScope.launch {
