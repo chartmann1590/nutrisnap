@@ -94,6 +94,7 @@ fun NutriNavHost(
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onPipRoom = { navController.navigate(Routes.PIP_ROOM) },
                 onMilestones = { navController.navigate(Routes.MILESTONES) },
+                onTrends = { navController.navigate(Routes.TRENDS) },
             )
         }
         composable(Routes.ACHIEVEMENTS) {

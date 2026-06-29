@@ -72,9 +72,11 @@ fun NutriSnapApp(startViewModel: AppStartViewModel = hiltViewModel()) {
                             containerColor = MaterialTheme.colorScheme.surface,
                             tonalElevation = 0.dp,
                         ) {
-                            val tabs = TopLevelTab.entries
+                            // 4 tabs + camera placeholder at center = 5 items, perfectly centered
+                            val tabs = TopLevelTab.entries.filter { it != TopLevelTab.TRENDS }
                             tabs.forEachIndexed { index, tab ->
                                 if (index == 2) {
+                                    // Camera placeholder — FAB sits exactly here at screen center
                                     NavigationBarItem(
                                         selected = false,
                                         onClick = {},

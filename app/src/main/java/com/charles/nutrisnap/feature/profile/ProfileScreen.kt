@@ -36,6 +36,7 @@ fun ProfileScreen(
     onOpenSettings: () -> Unit,
     onPipRoom: () -> Unit = {},
     onMilestones: () -> Unit = {},
+    onTrends: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -72,6 +73,10 @@ fun ProfileScreen(
 
         TextButton(onClick = onMilestones) {
             Text("✨ Your Moments", color = Color(0xFF7C5CFC))
+        }
+
+        TextButton(onClick = onTrends) {
+            Text("📊 Trends", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         Spacer(Modifier.height(12.dp))
