@@ -172,7 +172,10 @@ fun NutriNavHost(
             SettingsScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.PIP_CHAT) {
-            PipChatScreen(onBack = { navController.popBackStack() })
+            PipChatScreen(
+                onBack = { navController.popBackStack() },
+                onPipRoom = { navController.navigate(Routes.PIP_ROOM) },
+            )
         }
     }
 }

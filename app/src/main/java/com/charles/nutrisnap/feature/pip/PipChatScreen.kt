@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +54,7 @@ import com.charles.nutrisnap.ui.components.Pip
 @Composable
 fun PipChatScreen(
     onBack: () -> Unit,
+    onPipRoom: () -> Unit = {},
     viewModel: PipChatViewModel = hiltViewModel(),
 ) {
     val messages by viewModel.messages.collectAsStateWithLifecycle()
@@ -86,8 +88,14 @@ fun PipChatScreen(
                 .padding(padding)
                 .imePadding()
         ) {
-            Box(Modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Pip(size = 96.dp, mood = pipMood, animated = true)
+                TextButton(onClick = onPipRoom) {
+                    Text("🏠 Visit Pip's Room", color = Color(0xFFFF9F1C))
+                }
             }
             LazyColumn(
                 state = listState,
