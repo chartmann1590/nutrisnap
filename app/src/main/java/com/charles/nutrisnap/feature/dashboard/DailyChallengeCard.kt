@@ -1,14 +1,18 @@
 package com.charles.nutrisnap.feature.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -18,18 +22,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.charles.nutrisnap.data.challenge.DailyChallengeState
-import com.charles.nutrisnap.ui.components.Pip
-import com.charles.nutrisnap.ui.components.PipMood
 
-private val ButterFill = Color(0x33FFD66B)
-private val ButterBorder = Color(0xFFFFD66B)
-private val ChallengeCorner = RoundedCornerShape(20.dp)
+private val ButterFill = Color(0xFFFFF8E1)
+private val ButterBorder = Color(0xFFFFB300)
+private val ChallengeCorner = RoundedCornerShape(16.dp)
+private val TextDark = Color(0xFF2C1A0E)
+private val TextMid = Color(0xFF5C3D1E)
 
 @Composable
 fun DailyChallengeCard(
@@ -39,50 +42,56 @@ fun DailyChallengeCard(
 ) {
     Surface(
         modifier = modifier
-            .rotate(1f)
             .border(width = 1.5.dp, color = ButterBorder, shape = ChallengeCorner)
             .clickable(onClick = onTap),
         shape = ChallengeCorner,
         color = ButterFill,
-        shadowElevation = 4.dp,
+        shadowElevation = 2.dp,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
         ) {
-            Pip(
-                size = 36.dp,
-                mood = if (challenge.isComplete) PipMood.Celebrate else PipMood.Thinking,
-                animated = false,
-            )
-            Spacer(Modifier.width(10.dp))
+            // Emoji badge circle instead of Pip
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(ButterBorder.copy(alpha = 0.25f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = if (challenge.isComplete) "✅" else challenge.type.emoji,
+                    fontSize = 22.sp,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "⭐ Today's Challenge",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3A2A21),
-                    letterSpacing = 0.sp,
+                    text = "Today's Challenge",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextMid,
+                    letterSpacing = 0.5.sp,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "${challenge.type.emoji} ${challenge.type.displayName}",
+                    text = challenge.type.displayName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3A2A21),
+                    color = TextDark,
                 )
                 Text(
                     text = challenge.type.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF5A4A41),
+                    color = TextMid,
                 )
                 if (challenge.isComplete) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "✅ Done!",
+                        text = "Complete! 🎉",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF3A2A21),
+                        color = Color(0xFF2E7D32),
                     )
                 } else {
                     Spacer(Modifier.height(6.dp))
@@ -90,10 +99,10 @@ fun DailyChallengeCard(
                         progress = { challenge.progress },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(4.dp)
+                            .height(5.dp)
                             .clip(RoundedCornerShape(4.dp)),
                         color = ButterBorder,
-                        trackColor = Color(0x66FFD66B),
+                        trackColor = Color(0xFFFFE082),
                     )
                 }
             }

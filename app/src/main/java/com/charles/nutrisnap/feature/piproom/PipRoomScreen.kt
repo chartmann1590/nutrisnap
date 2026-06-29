@@ -36,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +51,11 @@ import com.charles.nutrisnap.ui.theme.Mango
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private val RoomBg = Color(0xFFFFF3E0)
+private val OnRoomText = Color(0xFF2C1A0E)
+private val OnRoomTextMid = Color(0xFF6D4C2A)
+private val ChatBubbleBg = Color(0xFFFFE0B2)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,162 +78,173 @@ fun PipRoomScreen(
                         "Pip's Room 🏠",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        color = OnRoomText,
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = OnRoomText,
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
+                    containerColor = RoomBg,
                 ),
             )
         },
-        containerColor = Color.Transparent,
+        containerColor = RoomBg,
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        listOf(Color(0xFFFFF6EC), Color(0xFFFFE8D0))
-                    )
-                )
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Spacer(Modifier.height(16.dp))
+
+            // Hero Pip
+            Pip(
+                size = 180.dp,
+                mood = PipMood.Celebrate,
+                accessory = currentAccessory,
+                animated = true,
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                "Pip  •  Level $pipLevel",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = OnRoomText,
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                pipTitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = OnRoomTextMid,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                "★".repeat(pipLevel) + "☆".repeat(5 - pipLevel),
+                color = Mango,
+                fontSize = 22.sp,
+                letterSpacing = 4.sp,
+            )
+
+            Spacer(Modifier.height(28.dp))
+
+            // Wardrobe section
+            Text(
+                "Wardrobe ✨",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnRoomText,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Spacer(Modifier.height(16.dp))
-
-                // Hero: Pip
-                Pip(
-                    size = 200.dp,
-                    mood = PipMood.Celebrate,
-                    accessory = currentAccessory,
-                    animated = true,
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                Text(
-                    "Pip • Level $pipLevel  $pipTitle",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    "★".repeat(pipLevel) + "☆".repeat(5 - pipLevel),
-                    color = Mango,
-                    fontSize = 20.sp,
-                    letterSpacing = 2.sp,
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                // Wardrobe section
-                Text(
-                    "Pip's Wardrobe ✨",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    items(PipAccessory.values()) { accessory ->
-                        val isEarned = accessory in earnedAccessories
-                        val isEquipped = accessory == currentAccessory
-                        AccessoryCard(
-                            accessory = accessory,
-                            isEquipped = isEquipped,
-                            isEarned = isEarned,
-                            onClick = {
-                                if (isEarned) viewModel.equipAccessory(accessory)
-                            },
-                        )
-                    }
+                items(PipAccessory.values()) { accessory ->
+                    val isEarned = accessory in earnedAccessories
+                    val isEquipped = accessory == currentAccessory
+                    AccessoryCard(
+                        accessory = accessory,
+                        isEquipped = isEquipped,
+                        isEarned = isEarned,
+                        onClick = { if (isEarned) viewModel.equipAccessory(accessory) },
+                    )
                 }
+            }
 
-                Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(28.dp))
 
-                // Messages from Pip
-                Text(
-                    "Pip says… 💬",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            // Messages section
+            Text(
+                "Pip says…",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnRoomText,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-                Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
 
-                if (recentMessages.isEmpty()) {
+            if (recentMessages.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ChatBubbleBg)
+                        .padding(16.dp),
+                ) {
                     Text(
                         "Chat with Pip to see messages here! 💬",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth(),
+                        color = OnRoomTextMid,
                     )
-                } else {
-                    recentMessages.forEach { message ->
-                        Row(
-                            verticalAlignment = Alignment.Top,
+                }
+            } else {
+                recentMessages.forEach { message ->
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
+                    ) {
+                        Pip(
+                            size = 36.dp,
+                            mood = PipMood.Content,
+                            animated = false,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp),
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(ChatBubbleBg)
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                         ) {
-                            Pip(
-                                size = 32.dp,
-                                mood = PipMood.Content,
-                                animated = false,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0x1F5BC0EB),
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Column(Modifier.padding(12.dp)) {
-                                    Text(
-                                        message.text,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        pipRelativeTime(message.timestampMs),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                            Column {
+                                Text(
+                                    message.text,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = OnRoomText,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    pipRelativeTime(message.timestampMs),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OnRoomTextMid,
+                                )
                             }
                         }
                     }
                 }
-
-                Spacer(Modifier.height(24.dp))
-
-                PrimaryButton(
-                    text = "Chat with Pip 💬",
-                    onClick = onPipChat,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(Modifier.height(24.dp))
             }
+
+            Spacer(Modifier.height(20.dp))
+
+            PrimaryButton(
+                text = "Chat with Pip 💬",
+                onClick = onPipChat,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
@@ -242,23 +257,23 @@ fun AccessoryCard(
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val alpha = if (isEarned) 1f else 0.4f
+    val bgColor = when {
+        isEquipped -> Color(0xFFFFE0B2)
+        isEarned -> Color(0xFFFFF3E0)
+        else -> Color(0xFFEEEEEE)
+    }
 
-    Card(
+    Box(
         modifier = Modifier
-            .size(width = 72.dp, height = 90.dp)
-            .then(
-                if (isEquipped) {
-                    Modifier.border(2.dp, Mango, shape)
-                } else Modifier
-            )
+            .size(width = 76.dp, height = 96.dp)
             .clip(shape)
+            .background(bgColor)
+            .then(
+                if (isEquipped) Modifier.border(2.dp, Mango, shape)
+                else Modifier
+            )
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = alpha),
-        ),
-        shape = shape,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isEarned) 4.dp else 0.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             modifier = Modifier
@@ -268,7 +283,7 @@ fun AccessoryCard(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = if (isEarned) accessory.emoji else "🔒",
+                text = if (isEarned) accessory.emoji.ifEmpty { "✨" } else "🔒",
                 fontSize = 28.sp,
                 textAlign = TextAlign.Center,
             )
@@ -277,8 +292,8 @@ fun AccessoryCard(
                 text = if (isEquipped) "Equipped" else accessory.displayName,
                 fontSize = 9.sp,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
-                color = if (isEquipped) Mango else MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
+                maxLines = 2,
+                color = if (isEquipped) Mango else if (isEarned) OnRoomText else Color(0xFF9E9E9E),
                 fontWeight = if (isEquipped) FontWeight.Bold else FontWeight.Normal,
             )
         }
