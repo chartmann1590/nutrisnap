@@ -103,6 +103,20 @@ class SettingsViewModel @Inject constructor(
         FirebaseInstallations.getInstance().delete()
     }
 
+    val pipSoundsEnabled: StateFlow<Boolean> = prefs.pipSoundsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    val pipVoiceEnabled: StateFlow<Boolean> = prefs.pipVoiceEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setPipSoundsEnabled(enabled: Boolean) {
+        viewModelScope.launch { prefs.setPipSoundsEnabled(enabled) }
+    }
+
+    fun setPipVoiceEnabled(enabled: Boolean) {
+        viewModelScope.launch { prefs.setPipVoiceEnabled(enabled) }
+    }
+
     fun restorePurchases() {
         premiumAccess.restorePurchases()
     }

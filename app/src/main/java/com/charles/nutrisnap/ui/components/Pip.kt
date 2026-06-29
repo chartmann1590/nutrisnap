@@ -1,6 +1,7 @@
 package com.charles.nutrisnap.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -16,11 +17,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -33,6 +36,8 @@ import com.charles.nutrisnap.ui.theme.Mango
 import com.charles.nutrisnap.ui.theme.Mint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -61,6 +66,7 @@ fun Pip(
     modifier: Modifier = Modifier,
     size: Dp = 128.dp,
     mood: PipMood = PipMood.Content,
+    accessory: PipAccessory = PipAccessory.NONE,
     animated: Boolean = true,
     onPoke: () -> Unit = {},
 ) {
@@ -90,6 +96,13 @@ fun Pip(
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(1600), RepeatMode.Reverse),
         label = "sway",
+    )
+    // Slow orbit for CONFETTI_HALO dots.
+    val haloRotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = if (animated) 360f else 0f,
+        animationSpec = infiniteRepeatable(tween(4000, easing = LinearEasing), RepeatMode.Restart),
+        label = "haloRotation",
     )
 
     // Blink: eyes are open (1f) most of the time, snapping shut briefly at random.
@@ -264,7 +277,186 @@ fun Pip(
                         drawPath(smile, Cocoa, style = Stroke(width = w * 0.025f, cap = StrokeCap.Round))
                     }
                 }
+
+                // Draw accessory on top of Pip body; bobs/squashes with Pip.
+                when (accessory) {
+                    PipAccessory.NONE -> { /* nothing */ }
+                    PipAccessory.CHEF_HAT -> drawChefHat(w, h, dy)
+                    PipAccessory.PARTY_CROWN -> drawPartyCrown(w, h, dy)
+                    PipAccessory.GOLDEN_LEAF -> drawGoldenLeaf(w, h, dy)
+                    PipAccessory.HEART_GLASSES -> drawHeartGlasses(w, h, dy)
+                    PipAccessory.CONFETTI_HALO -> drawConfettiHalo(w, h, dy, haloRotation)
+                    PipAccessory.RAINBOW_HALO -> drawRainbowHalo(w, h, dy)
+                }
             }
         }
+    }
+}
+
+// ── Accessory draw helpers ────────────────────────────────────────────────────
+// All are DrawScope extension functions so they share the Canvas drawing API.
+// They define local x()/y() helpers matching the ones inside the Pip Canvas.
+
+private val Butter = Color(0xFFFFD66B)
+private val Sky = Color(0xFF5BC0EB)
+
+/** White toque with puffed dome and cylinder brim. */
+private fun DrawScope.drawChefHat(w: Float, h: Float, dy: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    val white = Color.White
+    val outline = Color(0xFF333333)
+    val strokeW = w * 0.018f
+
+    // Puffed dome (ellipse above the leaf)
+    val domeRx = w * 0.19f
+    val domeRy = h * 0.13f
+    val domeCx = x(0.5f)
+    val domeCy = y(0.01f)
+    drawOval(white, topLeft = Offset(domeCx - domeRx, domeCy - domeRy), size = Size(domeRx * 2, domeRy * 2))
+    drawOval(outline, topLeft = Offset(domeCx - domeRx, domeCy - domeRy), size = Size(domeRx * 2, domeRy * 2), style = Stroke(width = strokeW))
+
+    // Cylinder (band just above body top)
+    val cylLeft = x(0.25f)
+    val cylTop = y(0.1f)
+    val cylW = w * 0.5f
+    val cylH = h * 0.09f
+    drawRoundRect(white, topLeft = Offset(cylLeft, cylTop), size = Size(cylW, cylH), cornerRadius = CornerRadius(w * 0.025f))
+    drawRoundRect(outline, topLeft = Offset(cylLeft, cylTop), size = Size(cylW, cylH), cornerRadius = CornerRadius(w * 0.025f), style = Stroke(width = strokeW))
+
+    // Gray brim line at the bottom of cylinder
+    drawLine(Color(0xFFAAAAAA), Offset(cylLeft, cylTop + cylH), Offset(cylLeft + cylW, cylTop + cylH), strokeWidth = strokeW * 1.5f)
+}
+
+/** Butter-yellow zigzag crown with 3 coloured tips. */
+private fun DrawScope.drawPartyCrown(w: Float, h: Float, dy: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    val outline = Color(0xFF333333)
+    val strokeW = w * 0.015f
+
+    // Base of crown sits just above body top; three upward points.
+    val crown = Path().apply {
+        moveTo(x(0.22f), y(0.1f))
+        lineTo(x(0.22f), y(0.05f))
+        lineTo(x(0.3f), y(-0.06f))   // left tip
+        lineTo(x(0.38f), y(0.03f))
+        lineTo(x(0.5f), y(-0.11f))   // centre tip
+        lineTo(x(0.62f), y(0.03f))
+        lineTo(x(0.7f), y(-0.06f))   // right tip
+        lineTo(x(0.78f), y(0.05f))
+        lineTo(x(0.78f), y(0.1f))
+        close()
+    }
+    drawPath(crown, Butter)
+    drawPath(crown, outline, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+
+    // Small coloured gems on each tip
+    drawCircle(Berry, radius = w * 0.027f, center = Offset(x(0.3f), y(-0.06f)))
+    drawCircle(Mint,  radius = w * 0.027f, center = Offset(x(0.5f), y(-0.11f)))
+    drawCircle(Mango, radius = w * 0.027f, center = Offset(x(0.7f), y(-0.06f)))
+}
+
+/** Oversized leaf in golden colour with shimmer highlights. */
+private fun DrawScope.drawGoldenLeaf(w: Float, h: Float, dy: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    // Use scale() (already imported) to draw the standard leaf 1.3× larger.
+    scale(1.3f, pivot = Offset(x(0.59f), y(0.07f))) {
+        val leaf = Path().apply {
+            moveTo(x(0.52f), y(0.14f))
+            cubicTo(x(0.54f), y(0.02f), x(0.66f), y(0.0f),  x(0.66f), y(0.0f))
+            cubicTo(x(0.66f), y(0.0f),  x(0.66f), y(0.1f),  x(0.58f), y(0.13f))
+            cubicTo(x(0.54f), y(0.145f),x(0.52f), y(0.14f), x(0.52f), y(0.14f))
+            close()
+        }
+        drawPath(leaf, Butter)
+        // Two subtle shimmer lines diagonally across the leaf
+        drawLine(Color.White.copy(alpha = 0.55f),
+            start = Offset(x(0.54f), y(0.12f)), end = Offset(x(0.63f), y(0.03f)),
+            strokeWidth = w * 0.012f, cap = StrokeCap.Round)
+        drawLine(Color.White.copy(alpha = 0.3f),
+            start = Offset(x(0.56f), y(0.13f)), end = Offset(x(0.65f), y(0.05f)),
+            strokeWidth = w * 0.008f, cap = StrokeCap.Round)
+    }
+}
+
+/** Berry-pink heart shapes over each eye. */
+private fun DrawScope.drawHeartGlasses(w: Float, h: Float, dy: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    val outline = Color(0xFF333333)
+    val strokeW = w * 0.013f
+    // Eye centres (mirroring the Pip eye x positions)
+    for (ex in listOf(x(0.41f), x(0.61f))) {
+        val ey = y(0.52f)
+        val path = pipHeartPath(ex, ey, w * 0.09f)
+        drawPath(path, Berry)
+        drawPath(path, outline, style = Stroke(width = strokeW))
+    }
+}
+
+private fun pipHeartPath(cx: Float, cy: Float, size: Float): Path {
+    val s = size * 0.5f
+    return Path().apply {
+        moveTo(cx, cy + s * 0.8f)
+        cubicTo(cx - s * 1.2f, cy,           cx - s * 1.2f, cy - s * 0.8f, cx, cy - s * 0.3f)
+        cubicTo(cx + s * 1.2f, cy - s * 0.8f, cx + s * 1.2f, cy,           cx, cy + s * 0.8f)
+        close()
+    }
+}
+
+/** 8 coloured dots orbiting above Pip's head; animates when animated=true. */
+private fun DrawScope.drawConfettiHalo(w: Float, h: Float, dy: Float, rotationDeg: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    val radius = w * 0.38f
+    val cx = x(0.5f)
+    val cy = y(0.08f)
+    val dotRadius = w * 0.034f
+    val dotColors = listOf(Butter, Berry, Mint, Mango, Sky, Butter, Berry, Mint)
+    // 8 dots evenly spaced across the upper arc (210° → 330°)
+    val baseAngles = List(8) { i -> 210f + i * (120f / 7f) }
+    for (i in baseAngles.indices) {
+        val deg = (baseAngles[i] + rotationDeg).toDouble()
+        val rad = deg * PI / 180.0
+        drawCircle(
+            color = dotColors[i],
+            radius = dotRadius,
+            center = Offset((cx + radius * cos(rad)).toFloat(), (cy + radius * sin(rad)).toFloat()),
+        )
+    }
+}
+
+/** Six-colour arc rainbow above Pip's head. */
+private fun DrawScope.drawRainbowHalo(w: Float, h: Float, dy: Float) {
+    fun x(p: Float) = w * p
+    fun y(p: Float) = h * p + dy
+    val radius = w * 0.42f
+    val cx = x(0.5f)
+    val cy = y(0.08f)
+    val topLeft = Offset(cx - radius, cy - radius)
+    val arcSize = Size(radius * 2, radius * 2)
+    val rainbowColors = listOf(
+        Color(0xFFFF3B30), // Red
+        Color(0xFFFF9500), // Orange
+        Color(0xFFFFCC00), // Yellow
+        Color(0xFF34C759), // Green
+        Color(0xFF007AFF), // Blue
+        Color(0xFFAF52DE), // Violet
+    )
+    val startAngle = 210f        // lower-left, sweeping clockwise through 270° (top)
+    val totalSweep = 120f        // ends at 330° (lower-right)
+    val bandSweep = totalSweep / rainbowColors.size
+    for (i in rainbowColors.indices) {
+        drawArc(
+            color = rainbowColors[i],
+            startAngle = startAngle + i * bandSweep,
+            sweepAngle = bandSweep,
+            useCenter = false,
+            topLeft = topLeft,
+            size = arcSize,
+            style = Stroke(width = w * 0.06f, cap = StrokeCap.Round),
+        )
     }
 }

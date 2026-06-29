@@ -37,6 +37,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val pipSoundsEnabled by viewModel.pipSoundsEnabled.collectAsStateWithLifecycle()
+    val pipVoiceEnabled by viewModel.pipVoiceEnabled.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -189,6 +191,40 @@ fun SettingsScreen(
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = viewModel::resetFirebaseId) {
                 Text("Reset analytics identifier")
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Pip Personality
+        NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Pip Personality", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Pip Sounds 🔔", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Play sounds when Pip reacts",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = pipSoundsEnabled, onCheckedChange = { viewModel.setPipSoundsEnabled(it) })
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Pip's Voice 🗣️", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Let Pip read responses aloud",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = pipVoiceEnabled, onCheckedChange = { viewModel.setPipVoiceEnabled(it) })
             }
         }
 

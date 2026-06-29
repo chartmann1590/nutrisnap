@@ -11,6 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.charles.nutrisnap.ai.LiteRtGemmaEngine
 import com.charles.nutrisnap.ui.NutriSnapApp as NutriSnapAppUi
+import com.charles.nutrisnap.ui.sound.PipSoundManager
+import com.charles.nutrisnap.ui.sound.PipVoiceManager
 import com.charles.nutrisnap.ui.theme.NutriSnapTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -20,6 +22,12 @@ class MainActivity : ComponentActivity(), ComponentCallbacks2 {
 
     @Inject
     lateinit var gemmaEngine: LiteRtGemmaEngine
+
+    @Inject
+    lateinit var pipVoiceManager: PipVoiceManager
+
+    @Inject
+    lateinit var pipSoundManager: PipSoundManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -41,5 +49,11 @@ class MainActivity : ComponentActivity(), ComponentCallbacks2 {
         if (level == 60 || level == 80) {
             gemmaEngine.release()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        pipVoiceManager.shutdown()
+        pipSoundManager.release()
     }
 }

@@ -7,11 +7,15 @@ import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.ai.FoodEstimate
 import com.charles.nutrisnap.ai.GemmaEngine
 import com.charles.nutrisnap.data.MealRepository
+import com.charles.nutrisnap.data.PipEvent
+import com.charles.nutrisnap.data.PipEventBus
 import com.charles.nutrisnap.data.PremiumAccess
 import com.charles.nutrisnap.data.PremiumEntitlement
 import com.charles.nutrisnap.data.PremiumPlan
 import com.charles.nutrisnap.data.ScanQuota
 import com.charles.nutrisnap.data.ScanQuotaRepository
+import com.charles.nutrisnap.data.badge.BadgeDetector
+import com.charles.nutrisnap.data.challenge.DailyChallengeRepository
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
@@ -25,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -107,6 +112,9 @@ class ScanViewModel @Inject constructor(
     private val mealRepository: MealRepository,
     private val premiumAccess: PremiumAccess,
     private val scanQuotaRepository: ScanQuotaRepository,
+    private val badgeDetector: BadgeDetector,
+    private val dailyChallengeRepository: DailyChallengeRepository,
+    private val pipEventBus: PipEventBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ScanUiState>(ScanUiState.Idle)
@@ -187,6 +195,7 @@ class ScanViewModel @Inject constructor(
 
     fun logMeal(estimate: FoodEstimate, mealType: MealType, photoUri: String?) {
         viewModelScope.launch {
+            val isFirstMeal = mealRepository.observeTodayMeals().first().isEmpty()
             val now = System.currentTimeMillis()
             val meal = MealEntity(
                 timestampMs = now,
@@ -201,6 +210,11 @@ class ScanViewModel @Inject constructor(
                 confidence = estimate.confidence,
             )
             mealRepository.logMeal(meal)
+            // Gamification
+            if (isFirstMeal) pipEventBus.emit(PipEvent.FirstMealOfDay)
+            pipEventBus.emit(PipEvent.MealLogged)
+            badgeDetector.checkAndAward()
+            dailyChallengeRepository.checkAndComplete(mealRepository.todayEpochDay())
             _events.emit(ScanEvent.Logged())
         }
     }

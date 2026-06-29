@@ -4,9 +4,15 @@ import androidx.room.Room
 import app.cash.turbine.test
 import com.charles.nutrisnap.ai.FakeGemmaEngine
 import com.charles.nutrisnap.data.ChatRepository
+import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.data.db.AppDatabase
 import com.charles.nutrisnap.data.db.ChatRole
+import com.charles.nutrisnap.ui.components.PipAccessory
 import com.charles.nutrisnap.ui.components.PipMood
+import com.charles.nutrisnap.ui.sound.PipVoiceManager
+import io.mockk.mockk
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -60,7 +66,7 @@ class PipChatViewModelTest {
 
     @Test
     fun `send appends user message then streamed pip reply`() = runTest {
-        val vm = PipChatViewModel(FakeGemmaEngine(), chatRepo, fakeSnapshot)
+        val vm = PipChatViewModel(FakeGemmaEngine(), chatRepo, fakeSnapshot, mockk(relaxed = true), fakeChatPrefs())
         testScheduler.advanceUntilIdle()
         vm.messages.test {
             awaitItem() // initial empty
@@ -78,7 +84,7 @@ class PipChatViewModelTest {
 
     @Test
     fun `generation flags reset after completion`() = runTest {
-        val vm = PipChatViewModel(FakeGemmaEngine(), chatRepo, fakeSnapshot)
+        val vm = PipChatViewModel(FakeGemmaEngine(), chatRepo, fakeSnapshot, mockk(relaxed = true), fakeChatPrefs())
         testScheduler.advanceUntilIdle()
         vm.send("hi")
         assertFalse(vm.isGenerating.value)
@@ -89,7 +95,7 @@ class PipChatViewModelTest {
     @Test
     fun `failed stream appends fallback and stays usable`() = runTest {
         val engine = FakeGemmaEngine().apply { chatShouldFail = true }
-        val vm = PipChatViewModel(engine, chatRepo, fakeSnapshot)
+        val vm = PipChatViewModel(engine, chatRepo, fakeSnapshot, mockk(relaxed = true), fakeChatPrefs())
         testScheduler.advanceUntilIdle()
         vm.messages.test {
             awaitItem()
@@ -102,4 +108,10 @@ class PipChatViewModelTest {
         }
         assertFalse(vm.isGenerating.value)
     }
+}
+
+private fun fakeChatPrefs() = object : UserPreferencesRepository(null) {
+    override val pipVoiceEnabled: Flow<Boolean> = flowOf(false)
+    override val pipSoundsEnabled: Flow<Boolean> = flowOf(true)
+    override val pipAccessory: Flow<PipAccessory> = flowOf(PipAccessory.NONE)
 }
