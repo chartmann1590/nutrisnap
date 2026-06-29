@@ -35,10 +35,12 @@ class LiteRtGemmaEngine @Inject constructor(
     private var engine: Engine? = null
     private var warmedUp = false
 
-    override suspend fun warmUp() = mutex.withLock {
-        if (warmedUp) return@withLock
-        engine = createEngine()
-        warmedUp = true
+    override suspend fun warmUp() = withContext(Dispatchers.Default) {
+        mutex.withLock {
+            if (warmedUp) return@withLock
+            engine = createEngine()
+            warmedUp = true
+        }
     }
 
     override suspend fun analyzeFood(image: Bitmap, hint: String?): Result<FoodEstimate> =
@@ -86,13 +88,14 @@ class LiteRtGemmaEngine @Inject constructor(
 
     override fun isReady(): Boolean = warmedUp
 
-    override suspend fun startChat(systemInstruction: String): ChatSession {
-        val eng = ensureEngine()
-        val conv = eng.createConversation(
-            ConversationConfig(systemInstruction = Contents.of(systemInstruction))
-        )
-        return LiteRtChatSession(conv, mutex)
-    }
+    override suspend fun startChat(systemInstruction: String): ChatSession =
+        withContext(Dispatchers.Default) {
+            val eng = ensureEngine()
+            val conv = eng.createConversation(
+                ConversationConfig(systemInstruction = Contents.of(systemInstruction))
+            )
+            LiteRtChatSession(conv, mutex)
+        }
 
     suspend fun verifyModel(): Result<Unit> = withContext(Dispatchers.Default) {
         val eng = ensureEngine()
@@ -120,10 +123,12 @@ class LiteRtGemmaEngine @Inject constructor(
         }
     }
 
-    private suspend fun ensureEngine(): Engine = mutex.withLock {
-        engine ?: createEngine().also {
-            engine = it
-            warmedUp = true
+    private suspend fun ensureEngine(): Engine = withContext(Dispatchers.Default) {
+        mutex.withLock {
+            engine ?: createEngine().also {
+                engine = it
+                warmedUp = true
+            }
         }
     }
 
