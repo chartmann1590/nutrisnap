@@ -34,6 +34,7 @@ jobs:
           if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
             echo "Failed to obtain access token"; echo "$RESPONSE" | jq .; exit 1
           fi
+          echo "Token scope: $(echo "$RESPONSE" | jq -r '.scope')"
           echo "::add-mask::${ACCESS_TOKEN}"
           echo "access_token=$ACCESS_TOKEN" >> "$GITHUB_OUTPUT"
 
@@ -44,12 +45,17 @@ jobs:
         run: |
           set -e
           APP_ID=$(echo -n "${FIREBASE_APP_ID}" | sed 's/:/%3A/g')
-          curl -s \
+          HTTP_CODE=$(curl -s -o crashlytics_issues.json -w "%{http_code}" \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${APP_ID}/reports/topIssues?pageSize=25" \
-            > crashlytics_issues.json
+            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${APP_ID}/reports/topIssues?pageSize=25")
+          echo "HTTP status: ${HTTP_CODE}"
           cat crashlytics_issues.json | jq .
-          if cat crashlytics_issues.json | jq -e '.error' > /dev/null 2>&1; then
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "No Crashlytics data found (app may have no crashes yet). Writing empty result."
+            echo '{"groups":[]}' > crashlytics_issues.json
+          elif [ "$HTTP_CODE" != "200" ]; then
+            echo "Crashlytics API returned HTTP ${HTTP_CODE} (see above)"; exit 1
+          elif cat crashlytics_issues.json | jq -e '.error' > /dev/null 2>&1; then
             echo "Crashlytics API returned an error (see above)"; exit 1
           fi
 
