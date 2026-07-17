@@ -42,9 +42,11 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
         run: |
+          set -e
+          APP_ID=$(echo -n "${FIREBASE_APP_ID}" | sed 's/:/%3A/g')
           curl -s \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${FIREBASE_APP_ID}/reports/topIssues?pageSize=25" \
+            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${APP_ID}/reports/topIssues?pageSize=25" \
             > crashlytics_issues.json
           cat crashlytics_issues.json | jq .
           if cat crashlytics_issues.json | jq -e '.error' > /dev/null 2>&1; then
