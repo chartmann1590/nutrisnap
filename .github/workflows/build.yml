@@ -27,6 +27,9 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x gradlew
 
+      - name: Create google-services.json
+        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d -i > app/google-services.json
+
       - name: Build debug APK
         run: ./gradlew assembleDebug
 
