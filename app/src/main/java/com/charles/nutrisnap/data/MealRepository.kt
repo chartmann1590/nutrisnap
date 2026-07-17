@@ -47,4 +47,8 @@ open class MealRepository @Inject constructor(
     open suspend fun logMeal(meal: MealEntity): Long = mealDao!!.insert(meal)
 
     open suspend fun deleteMeal(id: Long) = mealDao!!.deleteById(id)
+
+    open suspend fun getMeal(id: Long): MealEntity? = mealDao!!.getById(id)
+
+    open suspend fun updateMeal(meal: MealEntity) = mealDao!!.update(meal)
 }

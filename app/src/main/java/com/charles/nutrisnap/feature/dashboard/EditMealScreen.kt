@@ -61,11 +61,46 @@ class EditMealViewModel @Inject constructor(
     val state: StateFlow<EditMealState> = _state.asStateFlow()
 
     private var mealId: Long = 0
+    private var loadedMeal: com.charles.nutrisnap.data.db.MealEntity? = null
 
     fun load(mealId: Long) {
         this.mealId = mealId
         viewModelScope.launch {
-            _state.value = _state.value.copy(loaded = true)
+            val meal = mealRepository.getMeal(mealId)
+            loadedMeal = meal
+            if (meal != null) {
+                _state.value = EditMealState(
+                    name = meal.name,
+                    kcal = meal.totalKcal,
+                    proteinG = meal.proteinG,
+                    carbsG = meal.carbsG,
+                    fatG = meal.fatG,
+                    mealType = meal.mealType,
+                    loaded = true,
+                )
+            } else {
+                _state.value = _state.value.copy(loaded = true)
+            }
+        }
+    }
+
+    fun adjustKcal(delta: Int) {
+        _state.value = _state.value.copy(kcal = (_state.value.kcal + delta).coerceAtLeast(0))
+    }
+
+    fun save() {
+        val meal = loadedMeal ?: return
+        val current = _state.value
+        viewModelScope.launch {
+            mealRepository.updateMeal(
+                meal.copy(
+                    name = current.name,
+                    totalKcal = current.kcal,
+                    proteinG = current.proteinG,
+                    carbsG = current.carbsG,
+                    fatG = current.fatG,
+                )
+            )
         }
     }
 
@@ -116,12 +151,24 @@ fun EditMealScreen(
 
             NutriCard(cornerRadius = 20.dp, padding = 16.dp, modifier = Modifier.fillMaxWidth()) {
                 Text("CALORIES", style = MaterialTheme.typography.labelMedium)
-                Stepper("${state.kcal}", "kcal", {}, {})
+                Stepper(
+                    "${state.kcal}",
+                    "kcal",
+                    { viewModel.adjustKcal(-10) },
+                    { viewModel.adjustKcal(10) },
+                )
             }
 
             Spacer(Modifier.height(16.dp))
 
-            PrimaryButton(text = "Save changes", onClick = onClose, modifier = Modifier.fillMaxWidth())
+            PrimaryButton(
+                text = "Save changes",
+                onClick = {
+                    viewModel.save()
+                    onClose()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(8.dp))
             SecondaryButton(text = "Discard", onClick = onClose, modifier = Modifier.fillMaxWidth())
         }

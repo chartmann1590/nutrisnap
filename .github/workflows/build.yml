@@ -7,9 +7,8 @@ on:
     branches: [ main, master ]
 
 env:
-  GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
-  GH_REPO_OWNER: ${{ secrets.GH_REPO_OWNER }}
-  GH_REPO_NAME: ${{ secrets.GH_REPO_NAME }}
+  GH_PROXY_URL: ${{ secrets.GH_PROXY_URL }}
+  GH_PROXY_SECRET: ${{ secrets.GH_PROXY_SECRET }}
 
 jobs:
   build:
@@ -30,10 +29,6 @@ jobs:
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
-        env:
-          github.api.token: ${{ secrets.GH_API_TOKEN }}
-          github.repo.owner: ${{ secrets.GH_REPO_OWNER }}
-          github.repo.name: ${{ secrets.GH_REPO_NAME }}
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

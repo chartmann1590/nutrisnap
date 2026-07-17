@@ -15,36 +15,35 @@ import kotlin.random.Random
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Talks to the `workers/github-proxy` Cloudflare Worker rather than the GitHub API directly.
+ * The Worker holds the real GitHub PAT server-side and forwards a limited set of operations
+ * to a fixed repo, so no repo-write credential ever ships inside the APK. [proxySecret] is a
+ * low-privilege, rotatable app identifier — not a GitHub credential — that only gates access
+ * to this Worker's limited surface (issue/comment creation, feedback-asset upload).
+ */
 @Singleton
 class GithubApi @Inject constructor(
     @GithubOkHttp private val client: OkHttpClient,
     @FeedbackJson private val json: Json,
 ) {
-    private val token: String get() = BuildConfig.GITHUB_API_TOKEN
-    private val owner: String get() = BuildConfig.GITHUB_REPO_OWNER
-    private val repo: String get() = BuildConfig.GITHUB_REPO_NAME
+    private val proxyUrl: String get() = BuildConfig.GITHUB_PROXY_URL.trimEnd('/')
+    private val proxySecret: String get() = BuildConfig.GITHUB_PROXY_SECRET
 
     val isConfigured: Boolean
-        get() = token.isNotBlank() && owner.isNotBlank() && repo.isNotBlank()
+        get() = proxyUrl.isNotBlank() && proxySecret.isNotBlank()
 
     val configError: String?
         get() = when {
-            token.isBlank() -> "GitHub API token not configured.\nAdd github.api.token to local.properties or set GH_API_TOKEN secret."
-            owner.isBlank() -> "GitHub repo owner not configured.\nAdd github.repo.owner to local.properties or set GH_REPO_OWNER secret."
-            repo.isBlank() -> "GitHub repo name not configured.\nAdd github.repo.name to local.properties or set GH_REPO_NAME secret."
+            proxyUrl.isBlank() -> "GitHub proxy URL not configured.\nAdd github.proxy.url to local.properties or set GH_PROXY_URL secret."
+            proxySecret.isBlank() -> "GitHub proxy secret not configured.\nAdd github.proxy.secret to local.properties or set GH_PROXY_SECRET secret."
             else -> null
         }
 
-    private val baseUrl = "https://api.github.com/"
     private val jsonMediaType = "application/json".toMediaType()
 
     private fun Request.Builder.auth(): Request.Builder {
-        if (token.isNotBlank()) {
-            header("Authorization", "Bearer $token")
-        }
-        header("Accept", "application/vnd.github+json")
-        header("X-GitHub-Api-Version", "2022-11-28")
-        header("User-Agent", "NutriSnap-Android/0.1")
+        header("X-App-Secret", proxySecret)
         return this
     }
 
@@ -54,7 +53,7 @@ class GithubApi @Inject constructor(
             CreateIssueRequest(title = title, body = body),
         ).toRequestBody(jsonMediaType)
         val request = Request.Builder()
-            .url("${baseUrl}repos/$owner/$repo/issues")
+            .url("$proxyUrl/issues")
             .auth()
             .post(requestBody)
             .build()
@@ -63,7 +62,7 @@ class GithubApi @Inject constructor(
 
     suspend fun getIssue(number: Int): GithubIssue {
         val request = Request.Builder()
-            .url("${baseUrl}repos/$owner/$repo/issues/$number")
+            .url("$proxyUrl/issues/$number")
             .auth()
             .get()
             .build()
@@ -72,7 +71,7 @@ class GithubApi @Inject constructor(
 
     suspend fun getComments(issueNumber: Int): List<GithubComment> {
         val request = Request.Builder()
-            .url("${baseUrl}repos/$owner/$repo/issues/$issueNumber/comments")
+            .url("$proxyUrl/issues/$issueNumber/comments")
             .auth()
             .get()
             .build()
@@ -85,7 +84,7 @@ class GithubApi @Inject constructor(
             PostCommentRequest(body = body),
         ).toRequestBody(jsonMediaType)
         val request = Request.Builder()
-            .url("${baseUrl}repos/$owner/$repo/issues/$issueNumber/comments")
+            .url("$proxyUrl/issues/$issueNumber/comments")
             .auth()
             .post(requestBody)
             .build()
@@ -97,13 +96,12 @@ class GithubApi @Inject constructor(
         base64Content: String,
         message: String = "Add feedback asset",
     ): UploadAssetResponse {
-        val path = "${BuildConfig.FEEDBACK_ASSETS_DIR}/$filename"
         val requestBody = json.encodeToString(
             UploadAssetRequest.serializer(),
             UploadAssetRequest(message = message, content = base64Content),
         ).toRequestBody(jsonMediaType)
         val request = Request.Builder()
-            .url("${baseUrl}repos/$owner/$repo/contents/$path")
+            .url("$proxyUrl/assets/$filename")
             .auth()
             .put(requestBody)
             .build()

@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
 }
 
 val localProps = Properties()
@@ -41,21 +44,19 @@ android {
         buildConfigField("String", "MODEL_FILE_NAME_E4B", "\"gemma-4-E4B-it.litertlm\"")
         buildConfigField("long", "MODEL_SIZE_BYTES_E4B", "3659530240L") // ~3.4 GiB (E4B)
 
-        // GitHub-backed feedback reporter — values come from local.properties (dev) or
-        // GH_API_TOKEN / GH_REPO_OWNER / GH_REPO_NAME secrets (CI). Blanks disable submission.
-        val ghToken = localProps.getProperty("github.api.token")
-            ?: providers.gradleProperty("github.api.token").orNull
-            ?: System.getenv("GH_API_TOKEN") ?: ""
-        buildConfigField("String", "GITHUB_API_TOKEN", "\"$ghToken\"")
-        val ghOwner = localProps.getProperty("github.repo.owner")
-            ?: providers.gradleProperty("github.repo.owner").orNull
-            ?: System.getenv("GH_REPO_OWNER") ?: ""
-        buildConfigField("String", "GITHUB_REPO_OWNER", "\"$ghOwner\"")
-        val ghName = localProps.getProperty("github.repo.name")
-            ?: providers.gradleProperty("github.repo.name").orNull
-            ?: System.getenv("GH_REPO_NAME") ?: ""
-        buildConfigField("String", "GITHUB_REPO_NAME", "\"$ghName\"")
-        buildConfigField("String", "FEEDBACK_ASSETS_DIR", "\"feedback-assets\"")
+        // GitHub-backed feedback reporter — the app never holds a GitHub token. It talks to
+        // a Cloudflare Worker (workers/github-proxy) that holds the real GitHub PAT server-side
+        // and forwards a limited set of operations to a fixed repo. Values come from
+        // local.properties (dev) or GH_PROXY_URL / GH_PROXY_SECRET secrets (CI). Blanks disable
+        // submission.
+        val ghProxyUrl = localProps.getProperty("github.proxy.url")
+            ?: providers.gradleProperty("github.proxy.url").orNull
+            ?: System.getenv("GH_PROXY_URL") ?: ""
+        buildConfigField("String", "GITHUB_PROXY_URL", "\"$ghProxyUrl\"")
+        val ghProxySecret = localProps.getProperty("github.proxy.secret")
+            ?: providers.gradleProperty("github.proxy.secret").orNull
+            ?: System.getenv("GH_PROXY_SECRET") ?: ""
+        buildConfigField("String", "GITHUB_PROXY_SECRET", "\"$ghProxySecret\"")
     }
 
     signingConfigs {
@@ -73,6 +74,11 @@ android {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+            // Upload native (NDK) symbols so Crashlytics can symbolicate crashes inside
+            // litertlm/CameraX's native code, not just the Kotlin/Java stack.
+            configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+                nativeSymbolUploadEnabled = true
+            }
         }
         debug {
             isMinifyEnabled = false
@@ -170,10 +176,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.billing.ktx)
 
-    // Firebase diagnostics
+    // Firebase diagnostics — Crashlytics (incl. NDK, since litertlm/CameraX run substantial
+    // native code), Performance Monitoring, and Analytics.
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics.ktx)
     implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.firebase.crashlytics.ndk)
     implementation(libs.firebase.perf.ktx)
 
     // Phase 4 — LiteRT-LM (Gemma 4 on-device). Maven artifact: the runtime version must

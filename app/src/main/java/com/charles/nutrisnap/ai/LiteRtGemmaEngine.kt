@@ -11,6 +11,7 @@ import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
+import com.google.firebase.perf.FirebasePerformance
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -35,15 +36,30 @@ class LiteRtGemmaEngine @Inject constructor(
     private var engine: Engine? = null
     private var warmedUp = false
 
-    override suspend fun warmUp() = withContext(Dispatchers.Default) {
-        mutex.withLock {
-            if (warmedUp) return@withLock
-            engine = createEngine()
-            warmedUp = true
+    /** Wraps [block] in a Firebase Performance trace. Inline so suspend calls inside [block]
+     *  are still allowed even though the parameter isn't typed `suspend`. */
+    private inline fun <T> traced(name: String, block: () -> T): T {
+        val trace = FirebasePerformance.getInstance().newTrace(name)
+        trace.start()
+        try {
+            return block()
+        } finally {
+            trace.stop()
+        }
+    }
+
+    override suspend fun warmUp(): Unit = traced("gemma_warm_up") {
+        withContext(Dispatchers.Default) {
+            mutex.withLock {
+                if (warmedUp) return@withLock
+                engine = createEngine()
+                warmedUp = true
+            }
         }
     }
 
     override suspend fun analyzeFood(image: Bitmap, hint: String?): Result<FoodEstimate> =
+        traced("gemma_analyze_food") {
         withContext(Dispatchers.Default) {
             val eng = ensureEngine()
             val modelPath = resolveModelPath()
@@ -51,8 +67,9 @@ class LiteRtGemmaEngine @Inject constructor(
             val conv = eng.createConversation(ConversationConfig(
                 systemInstruction = Contents.of("You are a nutritionist. Return ONLY compact JSON.")
             ))
+            var imageFile: File? = null
             try {
-                val imageFile = bitmapToTempFile(image)
+                imageFile = bitmapToTempFile(image)
                 val prompt = buildMultimodalPrompt(hint)
                 val response = conv.sendMessage(
                     Contents.of(Content.ImageFile(imageFile.absolutePath), Content.Text(prompt))
@@ -67,10 +84,13 @@ class LiteRtGemmaEngine @Inject constructor(
                 Result.failure(e)
             } finally {
                 conv.close()
+                imageFile?.delete()
             }
+        }
         }
 
     override suspend fun estimateFromText(description: String): Result<FoodEstimate> =
+        traced("gemma_estimate_from_text") {
         withContext(Dispatchers.Default) {
             val eng = ensureEngine()
             val conv = eng.createConversation(ConversationConfig())
@@ -84,6 +104,7 @@ class LiteRtGemmaEngine @Inject constructor(
             } finally {
                 conv.close()
             }
+        }
         }
 
     override fun isReady(): Boolean = warmedUp
@@ -113,13 +134,13 @@ class LiteRtGemmaEngine @Inject constructor(
     }
 
     fun release() {
-        mutex.tryLock()
+        if (!mutex.tryLock()) return
         try {
             engine?.close()
             engine = null
             warmedUp = false
         } finally {
-            if (mutex.isLocked) mutex.unlock()
+            mutex.unlock()
         }
     }
 

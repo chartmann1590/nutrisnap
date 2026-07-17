@@ -71,7 +71,6 @@ import com.charles.nutrisnap.ui.components.SecondaryButton
 import com.charles.nutrisnap.ui.components.Stepper
 import com.charles.nutrisnap.ui.theme.NutriTheme
 import java.io.File
-import java.util.concurrent.Executors
 
 @Composable
 fun ScanScreen(
@@ -86,7 +85,6 @@ fun ScanScreen(
     val accessState by viewModel.accessState.collectAsStateWithLifecycle()
     var flashEnabled by remember { mutableStateOf(false) }
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
-    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     val photoDir = remember { File(context.cacheDir, "scan_photos").apply { mkdirs() } }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -96,7 +94,7 @@ fun ScanScreen(
             val bitmap = context.contentResolver.openInputStream(it)?.use { stream ->
                 BitmapFactory.decodeStream(stream)
             }
-            bitmap?.let { bm -> viewModel.onCaptured(bm) }
+            bitmap?.let { bm -> viewModel.onCaptured(bm, photoUri = it.toString()) }
         }
     }
 
@@ -118,6 +116,14 @@ fun ScanScreen(
                 is ScanEvent.NavigateToEntry -> onManualEntry()
                 else -> {}
             }
+        }
+    }
+
+    var boundCameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            boundCameraProvider?.unbindAll()
         }
     }
 
@@ -148,6 +154,7 @@ fun ScanScreen(
                             preview,
                             imageCaptureUseCase,
                         )
+                        boundCameraProvider = cameraProvider
                     } catch (_: Exception) {}
                 }, ContextCompat.getMainExecutor(ctx))
                 previewView
@@ -197,7 +204,10 @@ fun ScanScreen(
                             object : ImageCapture.OnImageSavedCallback {
                                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                     BitmapFactory.decodeFile(file.absolutePath)?.let {
-                                        viewModel.onCaptured(it)
+                                        viewModel.onCaptured(
+                                            it,
+                                            photoUri = android.net.Uri.fromFile(file).toString(),
+                                        )
                                     }
                                 }
                                 override fun onError(exception: ImageCaptureException) {
@@ -368,6 +378,7 @@ fun ScanResultScreen(
     // The estimate is handed over from the Scan screen's analysis via EstimateCache (this
     // destination has its own ViewModel instance, so it can't read the analyzing VM's state).
     val estimate = remember(estimateKey) { EstimateCache.get(estimateKey) }
+    val photoUri = remember(estimateKey) { EstimateCache.getPhotoUri(estimateKey) }
 
     LaunchedEffect(estimate) {
         estimate?.let {
@@ -435,7 +446,7 @@ fun ScanResultScreen(
                 val p = editableProtein.toIntOrNull() ?: estimate.proteinG
                 val c = editableCarbs.toIntOrNull() ?: estimate.carbsG
                 val f = editableFat.toIntOrNull() ?: estimate.fatG
-                viewModel.logMeal(estimate.copy(kcal = k, proteinG = p, carbsG = c, fatG = f), selectedMealType, null)
+                viewModel.logMeal(estimate.copy(kcal = k, proteinG = p, carbsG = c, fatG = f), selectedMealType, photoUri)
             }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
             SecondaryButton(text = "Discard", onClick = onClose, modifier = Modifier.fillMaxWidth())

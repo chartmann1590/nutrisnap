@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nutrisnap-github-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-17",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    "GH_REPO_OWNER": "chartmann1590",
+    "GH_REPO_NAME": "nutrisnap",
+    "FEEDBACK_ASSETS_DIR": "feedback-assets"
+  }
+}

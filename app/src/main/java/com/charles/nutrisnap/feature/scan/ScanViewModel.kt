@@ -74,16 +74,24 @@ sealed interface ScanEvent {
 }
 
 object BitmapCache {
-    private val cache = mutableMapOf<String, Bitmap>()
+    private const val MAX_ENTRIES = 3
+    private val cache = LinkedHashMap<String, Bitmap>()
 
+    @Synchronized
     fun put(bitmap: Bitmap): String {
         val key = UUID.randomUUID().toString()
         cache[key] = bitmap
+        while (cache.size > MAX_ENTRIES) {
+            val oldestKey = cache.keys.first()
+            cache.remove(oldestKey)
+        }
         return key
     }
 
+    @Synchronized
     fun get(key: String): Bitmap? = cache[key]
 
+    @Synchronized
     fun remove(key: String) = cache.remove(key)
 }
 
@@ -93,17 +101,34 @@ object BitmapCache {
  * than held in ViewModel state.
  */
 object EstimateCache {
-    private val cache = mutableMapOf<String, FoodEstimate>()
+    private const val MAX_ENTRIES = 5
+    private val cache = LinkedHashMap<String, FoodEstimate>()
+    private val photoUris = mutableMapOf<String, String>()
 
-    fun put(estimate: FoodEstimate): String {
+    @Synchronized
+    fun put(estimate: FoodEstimate, photoUri: String? = null): String {
         val key = UUID.randomUUID().toString()
         cache[key] = estimate
+        if (photoUri != null) photoUris[key] = photoUri
+        while (cache.size > MAX_ENTRIES) {
+            val oldestKey = cache.keys.first()
+            cache.remove(oldestKey)
+            photoUris.remove(oldestKey)
+        }
         return key
     }
 
+    @Synchronized
     fun get(key: String): FoodEstimate? = cache[key]
 
-    fun remove(key: String) = cache.remove(key)
+    @Synchronized
+    fun getPhotoUri(key: String): String? = photoUris[key]
+
+    @Synchronized
+    fun remove(key: String) {
+        cache.remove(key)
+        photoUris.remove(key)
+    }
 }
 
 @HiltViewModel
@@ -149,7 +174,7 @@ class ScanViewModel @Inject constructor(
         }
     }
 
-    fun onCaptured(bitmap: Bitmap, hint: String? = null) {
+    fun onCaptured(bitmap: Bitmap, hint: String? = null, photoUri: String? = null) {
         viewModelScope.launch {
             val isPremium = premiumAccess.entitlement.value.isPremium
             if (!isPremium && !scanQuotaRepository.canUseFreeScan()) {
@@ -170,7 +195,7 @@ class ScanViewModel @Inject constructor(
                     _state.value = ScanUiState.Idle
                     _events.emit(ScanEvent.NavigateToEntry("scan_fallback", bitmapKey))
                 } else {
-                    val estimateKey = EstimateCache.put(estimate)
+                    val estimateKey = EstimateCache.put(estimate, photoUri)
                     _state.value = ScanUiState.Result(estimate)
                     _events.emit(ScanEvent.NavigateToResult(estimateKey))
                 }

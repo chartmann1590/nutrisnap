@@ -78,4 +78,7 @@ interface MealDao {
 
     @Query("SELECT COUNT(*) FROM meal_entity")
     suspend fun countAll(): Int
+
+    @Query("SELECT * FROM meal_entity WHERE id = :id")
+    suspend fun getById(id: Long): MealEntity?
 }
