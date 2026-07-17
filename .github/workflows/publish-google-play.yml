@@ -1,0 +1,158 @@
+name: Publish to Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_play_publish:
+        description: 'Type "publish" to confirm submission to Google Play production'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes for this version (leave blank to auto-generate from commits)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm_play_publish == 'publish' }}
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Compute version code and version name
+        run: |
+          BASE_VERSION="0.2.0"
+          NOW_UTC=$(date -u +'%y%j%H%M')
+          VERSION_NAME="${BASE_VERSION}.$(date -u +'%Y%m%d.%H%M')"
+          echo "ANDROID_VERSION_CODE=${NOW_UTC}" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=${VERSION_NAME}" >> "$GITHUB_ENV"
+          echo "Play version code: $NOW_UTC"
+          echo "Play version name: $VERSION_NAME"
+
+      - name: Decode keystore
+        run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > nutrisnap-release.jks
+
+      - name: Create google-services.json
+        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > app/google-services.json
+
+      - name: Validate google-services.json
+        run: python3 -c "import json,sys; json.load(open('app/google-services.json')); print('OK')"
+
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "nutrisnap.storeFile=nutrisnap-release.jks" >> local.properties
+          echo "nutrisnap.storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
+          echo "nutrisnap.keyAlias=${{ secrets.KEY_ALIAS }}" >> local.properties
+          echo "nutrisnap.keyPassword=${{ secrets.KEY_PASSWORD }}" >> local.properties
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-play-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run unit tests
+        run: ./gradlew testReleaseUnitTest --no-daemon
+
+      - name: Run lint
+        run: ./gradlew lintRelease --no-daemon
+
+      - name: Build release AAB
+        run: ./gradlew bundleRelease --no-daemon
+
+      - name: Generate release notes
+        run: |
+          mkdir -p distribution/whatsnew
+          NOTES_FILE="distribution/whatsnew/whatsnew-en-US"
+          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
+            printf '%s' "${{ github.event.inputs.release_notes }}" > "$NOTES_FILE"
+          else
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+            if [ -n "$PREV_TAG" ]; then
+              git log "${PREV_TAG}..HEAD" --pretty=format:'- %s' > "$NOTES_FILE"
+            elif [ -f docs/whats_new.txt ]; then
+              cp docs/whats_new.txt "$NOTES_FILE"
+            else
+              echo "Bug fixes and performance improvements." > "$NOTES_FILE"
+            fi
+          fi
+          echo "Release notes:"
+          cat "$NOTES_FILE"
+
+      - name: Find AAB file
+        id: aab
+        run: |
+          AAB_PATH=$(find app/build/outputs/bundle/release -name '*.aab' | head -1)
+          echo "path=$AAB_PATH" >> "$GITHUB_OUTPUT"
+          echo "AAB: $AAB_PATH"
+
+      - name: Find mapping file
+        id: mapping
+        run: |
+          MAPPING_PATH="app/build/outputs/mapping/release/mapping.txt"
+          if [ -f "$MAPPING_PATH" ]; then
+            echo "path=$MAPPING_PATH" >> "$GITHUB_OUTPUT"
+            echo "Mapping found: $MAPPING_PATH"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "No mapping file found"
+          fi
+
+      - name: Upload AAB as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-release-aab
+          path: ${{ steps.aab.outputs.path }}
+          retention-days: 30
+
+      - name: Upload mapping as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-release-mapping
+          path: ${{ steps.mapping.outputs.path }}
+          retention-days: 30
+        if: ${{ steps.mapping.outputs.path != '' }}
+
+      - name: Verify Play Service Account
+        run: |
+          if [ -z "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "ERROR: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set"
+            exit 1
+          fi
+          echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is present"
+
+      - name: Publish to Google Play Production
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.charles.nutrisnap
+          releaseFiles: ${{ steps.aab.outputs.path }}
+          track: production
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
+          mappingFile: ${{ steps.mapping.outputs.path }}

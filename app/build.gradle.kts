@@ -26,8 +26,10 @@ android {
         applicationId = "com.charles.nutrisnap"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0"
+        val envVersionCode = System.getenv("ANDROID_VERSION_CODE")
+        val envVersionName = System.getenv("ANDROID_VERSION_NAME")
+        versionCode = envVersionCode?.toIntOrNull() ?: 2
+        versionName = envVersionName ?: "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -57,6 +59,28 @@ android {
             ?: providers.gradleProperty("github.proxy.secret").orNull
             ?: System.getenv("GH_PROXY_SECRET") ?: ""
         buildConfigField("String", "GITHUB_PROXY_SECRET", "\"$ghProxySecret\"")
+
+        // AdMob — real IDs come from local.properties (dev) or ADMOB_* secrets (CI/release).
+        // Debug builds always use Google's official test ad unit IDs below (buildTypes.debug),
+        // never the real ones, per AdMob policy against generating ad traffic while testing.
+        val admobAppId = localProps.getProperty("admob.app.id")
+            ?: providers.gradleProperty("admob.app.id").orNull
+            ?: System.getenv("ADMOB_APP_ID") ?: ""
+        val admobBannerId = localProps.getProperty("admob.banner.id")
+            ?: providers.gradleProperty("admob.banner.id").orNull
+            ?: System.getenv("ADMOB_BANNER_ID") ?: ""
+        val admobInterstitialId = localProps.getProperty("admob.interstitial.id")
+            ?: providers.gradleProperty("admob.interstitial.id").orNull
+            ?: System.getenv("ADMOB_INTERSTITIAL_ID") ?: ""
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerId\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$admobInterstitialId\"")
+        // The App ID must be a manifest meta-data value (the Ads SDK reads it before any
+        // Kotlin code runs), so it goes in via a manifest placeholder, not just BuildConfig.
+        manifestPlaceholders["admobAppId"] = admobAppId.ifBlank {
+            // Google's official "sample app" ID — safe placeholder so an unconfigured checkout
+            // still builds; real ad calls are still gated on non-blank ad unit IDs below.
+            "ca-app-pub-3940256099942544~3347511713"
+        }
     }
 
     signingConfigs {
@@ -82,6 +106,10 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            // Never serve real ads from a debug build — always use Google's official test
+            // ad unit IDs, regardless of what's configured for release.
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
         }
     }
 
@@ -183,6 +211,10 @@ dependencies {
     implementation(libs.firebase.crashlytics.ktx)
     implementation(libs.firebase.crashlytics.ndk)
     implementation(libs.firebase.perf.ktx)
+
+    // AdMob — banner + interstitial, gated behind premium entitlement, with UMP consent
+    implementation(libs.play.services.ads)
+    implementation(libs.user.messaging.platform)
 
     // Phase 4 — LiteRT-LM (Gemma 4 on-device). Maven artifact: the runtime version must
     // be new enough to load the current Gemma 4 .litertlm (multi-signature vision encoder).
