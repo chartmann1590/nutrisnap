@@ -4,6 +4,7 @@
 
 [![GitHub Pages](https://img.shields.io/badge/Website-Live-FF9F1C?style=flat-square)](https://chartmann1590.github.io/nutrisnap/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/charleshartmann)
 
 ---
 
@@ -51,6 +52,12 @@ NutriSnap is designed with privacy as a core principle:
 ## Design
 
 NutriSnap's "Snackable" design system features a warm Mango (#FF9F1C) palette with clean typography (Fredoka + Nunito). The full design is available in [`design/`](design/).
+
+---
+
+## Support
+
+If NutriSnap is useful to you, consider [buying me a coffee](https://buymeacoffee.com/charleshartmann) ☕ — it helps keep the project going.
 
 ---
 
