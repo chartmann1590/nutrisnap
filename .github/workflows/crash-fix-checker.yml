@@ -19,6 +19,10 @@ jobs:
   checker:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Exchange Firebase refresh token for access token
         id: auth
         env:
@@ -59,10 +63,6 @@ jobs:
             echo "Crashlytics API returned an error (see above)"; exit 1
           fi
           echo "Fetched $(jq '.groups | length' crashlytics_data.json) Crashlytics groups"
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Fix detection & stale auto-close
         uses: actions/github-script@v7
