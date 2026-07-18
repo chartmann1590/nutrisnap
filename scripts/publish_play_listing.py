@@ -106,15 +106,14 @@ def main() -> None:
         for path in paths:
             upload_image(image_type, path)
 
-    # changesNotSentForReview=true: this listing edit does not, on its own, submit the
-    # app for Google review — it just updates Play Console's draft state. The actual
-    # production release (uploaded separately with status=draft) is what a human
-    # still needs to review and roll out from Play Console.
-    r = requests.post(
-        f"{API_BASE}/edits/{edit_id}:commit",
-        headers=headers,
-        params={"changesNotSentForReview": "true"},
-    )
+    # A brand-new app's first-ever store listing submission is always sent for review —
+    # Google rejects changesNotSentForReview in that case ("Changes are sent for review
+    # automatically"). Once this app has a reviewed listing, later listing-only edits can
+    # add that param back to avoid re-triggering review for cosmetic changes. Submitting
+    # listing content for review does not, on its own, roll the app out — the production
+    # release (uploaded separately with status=draft) still needs a human to review and
+    # roll out from Play Console.
+    r = requests.post(f"{API_BASE}/edits/{edit_id}:commit", headers=headers)
     check(r, "commit listing edit")
 
 
