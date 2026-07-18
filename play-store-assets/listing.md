@@ -46,6 +46,7 @@ NutriSnap requires a device with 6 GB+ RAM to run the on-device AI model smoothl
 Privacy Policy: https://chartmann1590.github.io/nutrisnap/privacy-policy.html
 Terms of Service: https://chartmann1590.github.io/nutrisnap/terms-of-service.html
 Website: https://chartmann1590.github.io/nutrisnap/
+Promo video: https://youtu.be/txT3lqMDjaM
 
 ## Category
 Health & Fitness

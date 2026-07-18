@@ -8,6 +8,12 @@
 
 ---
 
+## Demo
+
+[![Watch the NutriSnap demo](https://img.youtube.com/vi/txT3lqMDjaM/maxresdefault.jpg)](https://youtu.be/txT3lqMDjaM)
+
+---
+
 ## What is NutriSnap?
 
 NutriSnap is a privacy-first calorie tracker that runs entirely on your device. No cameras upload to the cloud — every photo you snap stays on your phone.

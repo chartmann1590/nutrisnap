@@ -146,13 +146,26 @@ jobs:
           fi
           echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is present"
 
-      - name: Publish to Google Play Production
+      - name: Publish to Google Play Production (draft)
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.nutrisnap
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: production
-          status: completed
+          status: draft
           whatsNewDirectory: distribution/whatsnew
           mappingFile: ${{ steps.mapping.outputs.path }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Play listing publish dependencies
+        run: pip install google-auth requests
+
+      - name: Publish store listing (title, descriptions, promo video, icon, feature graphic, screenshots)
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/publish_play_listing.py

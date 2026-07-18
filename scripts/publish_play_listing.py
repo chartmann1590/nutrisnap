@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""
+Publishes the full Google Play store listing (title, descriptions, promo video URL,
+icon, feature graphic, and phone/7in/10in screenshots) via the Android Publisher API.
+
+This is separate from the release (AAB) upload, which the r0adkll/upload-google-play
+GitHub Action handles as its own edit. The Android Publisher API only allows one open
+edit per app at a time, so this script creates and commits its own edit, run as a
+step after the release upload has already committed.
+
+Requires GOOGLE_PLAY_SERVICE_ACCOUNT_JSON in the environment (the same service account
+secret used for the release upload) and the `google-auth` + `requests` packages.
+"""
+import glob
+import json
+import os
+import sys
+
+import google.auth.transport.requests
+import requests
+from google.oauth2 import service_account
+
+PACKAGE_NAME = "com.charles.nutrisnap"
+LOCALE = "en-US"
+SCOPES = ["https://www.googleapis.com/auth/androidpublisher"]
+API_BASE = f"https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{PACKAGE_NAME}"
+UPLOAD_BASE = f"https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/{PACKAGE_NAME}"
+
+ASSETS_DIR = "play-store-assets"
+PROMO_VIDEO_URL = "https://youtu.be/txT3lqMDjaM"
+
+TITLE = "NutriSnap: AI Calorie Tracker"
+SHORT_DESCRIPTION = "Snap a meal, get instant calories & macros — 100% on-device AI, private."
+
+
+def get_access_token() -> str:
+    sa_json = os.environ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"]
+    sa_info = json.loads(sa_json)
+    creds = service_account.Credentials.from_service_account_info(sa_info, scopes=SCOPES)
+    creds.refresh(google.auth.transport.requests.Request())
+    return creds.token
+
+
+def read_full_description() -> str:
+    with open(os.path.join(ASSETS_DIR, "listing.md"), encoding="utf-8") as f:
+        content = f.read()
+    marker = "## Full description (max 4000 chars)"
+    after = content.split(marker, 1)[1]
+    full_desc = after.split("---", 1)[0].strip()
+    if len(full_desc) > 4000:
+        raise ValueError(f"Full description is {len(full_desc)} chars, exceeds Play's 4000 limit")
+    return full_desc
+
+
+def check(response: requests.Response, action: str) -> None:
+    if not response.ok:
+        print(f"FAILED: {action}", file=sys.stderr)
+        print(f"  status: {response.status_code}", file=sys.stderr)
+        print(f"  body: {response.text}", file=sys.stderr)
+        response.raise_for_status()
+    print(f"OK: {action}")
+
+
+def main() -> None:
+    token = get_access_token()
+    headers = {"Authorization": f"Bearer {token}"}
+
+    r = requests.post(f"{API_BASE}/edits", headers=headers)
+    check(r, "create edit")
+    edit_id = r.json()["id"]
+
+    full_description = read_full_description()
+    listing = {
+        "language": LOCALE,
+        "title": TITLE,
+        "shortDescription": SHORT_DESCRIPTION,
+        "fullDescription": full_description,
+        "video": PROMO_VIDEO_URL,
+    }
+    r = requests.put(
+        f"{API_BASE}/edits/{edit_id}/listings/{LOCALE}",
+        headers=headers,
+        json=listing,
+    )
+    check(r, "update store listing text + promo video URL")
+
+    def upload_image(image_type: str, path: str) -> None:
+        with open(path, "rb") as f:
+            data = f.read()
+        r = requests.post(
+            f"{UPLOAD_BASE}/edits/{edit_id}/listings/{LOCALE}/{image_type}",
+            headers={**headers, "Content-Type": "image/png"},
+            data=data,
+        )
+        check(r, f"upload {image_type}: {os.path.basename(path)}")
+
+    upload_image("icon", os.path.join(ASSETS_DIR, "icon", "icon-512.png"))
+    upload_image("featureGraphic", os.path.join(ASSETS_DIR, "feature-graphic.png"))
+
+    for image_type, folder in [
+        ("phoneScreenshots", "phone"),
+        ("sevenInchScreenshots", "sevenInch"),
+        ("tenInchScreenshots", "tenInch"),
+    ]:
+        paths = sorted(glob.glob(os.path.join(ASSETS_DIR, "screenshots", folder, "*.png")))
+        for path in paths:
+            upload_image(image_type, path)
+
+    # changesNotSentForReview=true: this listing edit does not, on its own, submit the
+    # app for Google review — it just updates Play Console's draft state. The actual
+    # production release (uploaded separately with status=draft) is what a human
+    # still needs to review and roll out from Play Console.
+    r = requests.post(
+        f"{API_BASE}/edits/{edit_id}:commit",
+        headers=headers,
+        params={"changesNotSentForReview": "true"},
+    )
+    check(r, "commit listing edit")
+
+
+if __name__ == "__main__":
+    main()
