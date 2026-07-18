@@ -38,11 +38,18 @@ internal fun extractJson(raw: String): String? {
     return null
 }
 
-internal fun parseFoodEstimate(raw: String): Result<FoodEstimate> {
+/**
+ * [requireConfidence]: the photo-scan path uses the model's confidence to decide whether it
+ * actually recognized the food, falling back to manual entry below [MIN_CONFIDENCE]. Text-based
+ * estimation has no such fallback — the user already told us what the food is, so a merely
+ * uncertain *nutrition* estimate shouldn't hard-fail the request the way an uncertain *food
+ * identification* should.
+ */
+internal fun parseFoodEstimate(raw: String, requireConfidence: Boolean = true): Result<FoodEstimate> {
     val jsonStr = extractJson(raw) ?: return Result.failure(ParseException("No JSON object found"))
     return try {
         val estimate = json.decodeFromString<FoodEstimate>(jsonStr)
-        if (estimate.confidence < MIN_CONFIDENCE) {
+        if (requireConfidence && estimate.confidence < MIN_CONFIDENCE) {
             Result.failure(ParseException("Confidence ${estimate.confidence} below threshold $MIN_CONFIDENCE"))
         } else {
             Result.success(estimate)

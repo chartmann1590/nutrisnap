@@ -98,7 +98,7 @@ class LiteRtGemmaEngine @Inject constructor(
                 val prompt = buildTextPrompt(description)
                 val response = conv.sendMessage(prompt)
                 val text = extractText(response)
-                parseFoodEstimate(text)
+                parseFoodEstimate(text, requireConfidence = false)
             } catch (e: Exception) {
                 Result.failure(e)
             } finally {
