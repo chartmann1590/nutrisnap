@@ -89,7 +89,11 @@ fun ScanScreen(
     val accessState by viewModel.accessState.collectAsStateWithLifecycle()
     var flashEnabled by remember { mutableStateOf(false) }
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
-    val photoDir = remember { File(context.cacheDir, "scan_photos").apply { mkdirs() } }
+    val photoDir = remember {
+        val dir = File(context.cacheDir, "scan_photos")
+        dir.mkdirs()
+        dir
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()

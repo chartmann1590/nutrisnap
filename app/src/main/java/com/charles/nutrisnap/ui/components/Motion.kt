@@ -122,18 +122,22 @@ fun ConfettiBurst(
     visible: Boolean,
     modifier: Modifier,
 ) {
-    val alphas = remember { List(12) { Animatable(0f) } }
+    val alphas = remember {
+        val list = List(12) { Animatable(0f) }
+        list
+    }
     val offsets = remember {
         val rng = Random(42)
-        List(12) {
+        val list = List(12) {
             val angle = rng.nextFloat() * 2f * kotlin.math.PI.toFloat()
             val dist = 30f + rng.nextFloat() * 60f
             Offset(cos(angle) * dist, sin(angle) * dist)
         }
+        list
     }
     val colors = remember {
         val rng = Random(7)
-        List(12) {
+        val list = List(12) {
             Color(
                 red = rng.nextFloat(),
                 green = rng.nextFloat(),
@@ -141,6 +145,7 @@ fun ConfettiBurst(
                 alpha = 1f,
             )
         }
+        list
     }
 
     LaunchedEffect(visible) {
