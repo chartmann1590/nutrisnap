@@ -1,8 +1,10 @@
 package com.charles.nutrisnap.feature.settings
 
+import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.charles.nutrisnap.ads.ConsentManager
 import com.charles.nutrisnap.data.ModelRepository
 import com.charles.nutrisnap.data.ModelState
 import com.charles.nutrisnap.data.ModelVariant
@@ -45,6 +47,7 @@ class SettingsViewModel @Inject constructor(
     private val prefs: UserPreferencesRepository,
     private val premiumAccess: PremiumAccess,
     private val weightRepository: WeightRepository,
+    private val consentManager: ConsentManager,
 ) : AndroidViewModel(app) {
 
     val state: StateFlow<SettingsUiState> = combine(
@@ -120,6 +123,10 @@ class SettingsViewModel @Inject constructor(
 
     fun resetFirebaseId() {
         FirebaseInstallations.getInstance().delete()
+    }
+
+    fun manageAdConsent(activity: Activity) {
+        consentManager.showPrivacyOptionsForm(activity)
     }
 
     val pipSoundsEnabled: StateFlow<Boolean> = prefs.pipSoundsEnabled

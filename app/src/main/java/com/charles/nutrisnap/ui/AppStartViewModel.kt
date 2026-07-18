@@ -3,6 +3,7 @@ package com.charles.nutrisnap.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.nutrisnap.data.ModelRepository
+import com.charles.nutrisnap.data.PremiumAccess
 import com.charles.nutrisnap.data.ThemeMode
 import com.charles.nutrisnap.data.UserPreferencesRepository
 import com.charles.nutrisnap.ui.nav.Routes
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class AppStartViewModel @Inject constructor(
     private val prefs: UserPreferencesRepository,
     private val modelRepository: ModelRepository,
+    private val premiumAccess: PremiumAccess,
 ) : ViewModel() {
 
     private val _startRoute = MutableStateFlow<String?>(null)
@@ -28,6 +30,11 @@ class AppStartViewModel @Inject constructor(
 
     val themeMode: StateFlow<ThemeMode> = prefs.prefs.map { it.themeMode }
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
+
+    /** Premium removes ads entirely. */
+    val showAds: StateFlow<Boolean> = premiumAccess.entitlement
+        .map { !it.isPremium }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
         viewModelScope.launch {

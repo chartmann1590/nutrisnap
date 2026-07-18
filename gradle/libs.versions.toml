@@ -33,6 +33,8 @@ firebaseBom = "33.13.0"
 googleServicesPlugin = "4.4.2"
 crashlyticsPlugin = "3.0.3"
 firebasePerfPlugin = "2.0.2"
+playServicesAds = "25.4.0"
+userMessagingPlatform = "4.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -99,6 +101,10 @@ firebase-perf-ktx = { group = "com.google.firebase", name = "firebase-perf-ktx" 
 firebase-config-ktx = { group = "com.google.firebase", name = "firebase-config-ktx" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 firebase-inappmessaging-display-ktx = { group = "com.google.firebase", name = "firebase-inappmessaging-display-ktx" }
+
+# AdMob
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
 
 # Firebase Gradle plugins (classpath resolved via version catalog plugins block)
 

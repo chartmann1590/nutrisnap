@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +32,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.charles.nutrisnap.ads.BannerAd
 import com.charles.nutrisnap.data.ThemeMode
 import com.charles.nutrisnap.ui.components.Pip
 import com.charles.nutrisnap.ui.nav.NutriNavHost
@@ -44,6 +46,7 @@ import com.charles.nutrisnap.ui.theme.NutriSnapTheme
 fun NutriSnapApp(startViewModel: AppStartViewModel = hiltViewModel()) {
     val startRoute by startViewModel.startRoute.collectAsStateWithLifecycle()
     val themeMode by startViewModel.themeMode.collectAsStateWithLifecycle()
+    val showAds by startViewModel.showAds.collectAsStateWithLifecycle()
 
     val isDark = when (themeMode) {
         ThemeMode.DARK -> true
@@ -67,7 +70,9 @@ fun NutriSnapApp(startViewModel: AppStartViewModel = hiltViewModel()) {
                 )
 
                 if (showBars) {
-                    Box(Modifier.align(Alignment.BottomCenter)) {
+                  Column(Modifier.align(Alignment.BottomCenter)) {
+                    if (showAds) BannerAd()
+                    Box {
                         NavigationBar(
                             containerColor = MaterialTheme.colorScheme.surface,
                             tonalElevation = 0.dp,
@@ -126,6 +131,7 @@ fun NutriSnapApp(startViewModel: AppStartViewModel = hiltViewModel()) {
                                 tint = Color.White, modifier = Modifier.size(30.dp))
                         }
                     }
+                  }
                 }
             }
         } else {

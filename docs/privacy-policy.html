@@ -35,7 +35,7 @@
 <div class="legal-content">
   <a href="index.html" class="back-link">&larr; Back to NutriSnap</a>
   <h1>Privacy Policy</h1>
-  <p class="meta">Last updated: June 27, 2026 &middot; Version 1.1 &middot; App version: 0.2.0</p>
+  <p class="meta">Last updated: July 18, 2026 &middot; Version 1.2 &middot; App version: 0.2.0</p>
 
   <h2>1. Who We Are</h2>
   <p>
@@ -54,8 +54,9 @@
     NutriSnap is designed to be <strong>private by default</strong>. We collect the absolute minimum necessary
     for the app to function — and the vast majority of your data stays on your device. A limited set of
     <strong>anonymized diagnostic signals</strong> (crash reports, performance metrics, and anonymised usage
-    events) is transmitted to <strong>Firebase (Google LLC)</strong> for app improvement purposes. See
-    <a href="#third-party">Section 5</a> for exactly what is and is not included.
+    events) is transmitted to <strong>Firebase (Google LLC)</strong> for app improvement purposes, and, for
+    non-Premium users, standard ad-request signals are sent to <strong>Google AdMob</strong> to serve ads. See
+    <a href="#third-party">Section 5</a> and <a href="#ads">Section 6</a> for exactly what is and is not included.
   </p>
 
   <h3>3.1 Camera &amp; Photo Data</h3>
@@ -78,8 +79,9 @@
   <ul>
     <li><strong>CAMERA</strong> — Used solely for taking photos of food for AI analysis. No images are transmitted.</li>
     <li><strong>POST_NOTIFICATIONS</strong> — Used to show download progress when the AI model is being downloaded (one-time, optional).</li>
-    <li><strong>INTERNET</strong> — Used for the optional one-time download of the Gemma 4 AI model from HuggingFace, and for communicating with Firebase services (crash reporting, performance monitoring, analytics, remote config, and potential push notifications).</li>
-    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download and Firebase operations.</li>
+    <li><strong>INTERNET</strong> — Used for the optional one-time download of the Gemma 4 AI model from HuggingFace, for communicating with Firebase services (crash reporting, performance monitoring, analytics, remote config, and potential push notifications), and for requesting ads from Google AdMob.</li>
+    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download, Firebase operations, and ad requests.</li>
+    <li><strong>com.google.android.gms.permission.AD_ID</strong> — Added automatically by the Google Mobile Ads SDK on Android 13+ so the app may read the (user-resettable) Advertising ID for ad personalization and frequency capping, subject to your consent choice described in <a href="#ads">Section 6</a>.</li>
   </ul>
 
   <h3>3.4 Barcode Scanning</h3>
@@ -168,28 +170,59 @@
       to correlate crash/analytics/performance data across sessions. You may reset this ID at any time in
       Settings → Privacy &amp; Diagnostics.
     </li>
+    <li><strong>Google AdMob / Google Mobile Ads SDK</strong> (Google LLC) — Serves banner and interstitial
+      ads to non-Premium users. See <a href="#ads">Section 6</a> for what this involves and how to control it.
+      Google's own <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy
+      Policy</a> and <a href="https://support.google.com/admob/answer/6128543" target="_blank" rel="noopener">
+      AdMob data disclosure</a> govern Google's handling of ad-related data.</li>
+    <li><strong>Google User Messaging Platform (UMP)</strong> (Google LLC) — Presents the ad-consent
+      dialog described in <a href="#ads">Section 6</a> and records your consent choice.</li>
   </ul>
 
-  <h2>6. Limited Diagnostics, No Ads, Optional Premium</h2>
+  <h2 id="ads">6. Advertising, Diagnostics, and Optional Premium</h2>
   <p>
-    NutriSnap now integrates <strong>Firebase Crashlytics, Performance Monitoring, and Google Analytics for
-    Firebase</strong> solely for the purpose of improving app stability and understanding how users interact
-    with the App. These services collect only the anonymized diagnostic signals described in
-    <a href="#third-party">Section 5</a>.
+    NutriSnap is ad-supported for non-Premium users. We show <strong>banner and interstitial ads via Google
+    AdMob</strong> (Google Mobile Ads SDK) to keep the free tier sustainable. NutriSnap Premium (an optional
+    Google Play subscription) <strong>removes ads entirely</strong>, in addition to unlocking unlimited AI scans.
+  </p>
+  <h3>6.1 What ads involve</h3>
+  <ul>
+    <li><strong>Ad requests</strong> send Google information such as your device's Advertising ID (where
+      permitted, see below), general (non-precise) location derived from IP address, device type, OS version,
+      and app version, so Google can select and measure an ad to show.</li>
+    <li><strong>Consent</strong> — On first launch, the App uses Google's <strong>User Messaging Platform
+      (UMP)</strong> to determine whether your region requires a consent prompt (e.g., EEA, UK) and, if so,
+      shows one before any ad request is made. You can change your choice at any time from
+      <strong>Settings → Privacy &amp; Diagnostics → Ad Consent</strong>.</li>
+    <li><strong>Non-personalized ads</strong> — Where you decline personalization (or where required by your
+      region/consent choice), Google may still show non-personalized ads based on contextual signals only.</li>
+    <li><strong>Your device's ad controls</strong> — You can reset your Advertising ID or opt out of
+      personalized advertising entirely at the OS level via
+      <strong>Settings → Privacy → Ads</strong> on your device (Android's system-wide ad settings), independent
+      of NutriSnap.</li>
+  </ul>
+  <p>
+    NutriSnap does not pass any food photo, meal entry, weight log, or other health data to AdMob — ad requests
+    only ever include the standard device/ad-signal fields Google's SDK collects on its own.
+  </p>
+  <h3>6.2 Diagnostics</h3>
+  <p>
+    Separately from advertising, NutriSnap integrates <strong>Firebase Crashlytics, Performance Monitoring, and
+    Google Analytics for Firebase</strong> to improve app stability and understand feature usage. These collect
+    only the anonymized diagnostic signals described in <a href="#third-party">Section 5</a>, and are
+    <strong>not</strong> combined with AdMob's advertising identifiers for ad targeting.
   </p>
   <p>
-    <strong>What remains true from day one:</strong>
+    <strong>What remains true:</strong>
   </p>
   <ul>
-    <li><strong>No advertising SDKs</strong> — We do not show ads, serve ads, or integrate any ad network SDK.</li>
-    <li><strong>No Facebook / Meta SDKs</strong> — No cross-app tracking or social plugins.</li>
-    <li><strong>No Advertising ID / AAID collection</strong> — We never read or share the Android Advertising ID.</li>
-    <li><strong>No sale of data</strong> — We do not sell, rent, or share any user data with third parties for monetary gain.</li>
-    <li><strong>Food photos, meal entries, weight logs, and goal data</strong> — These never leave your device.</li>
+    <li><strong>No sale of data</strong> — We do not sell, rent, or share any user data with third parties for monetary gain (serving ads through AdMob is not a sale of data under CCPA/CPRA — Google acts as a service provider for this purpose).</li>
+    <li><strong>Food photos, meal entries, weight logs, and goal data</strong> — These never leave your device, and are never shared with AdMob, Crashlytics, Performance Monitoring, or Analytics.</li>
+    <li><strong>Premium removes ads</strong> — Subscribing to NutriSnap Premium disables all ad requests.</li>
   </ul>
   <p>
     Core tracking is free. NutriSnap Premium is an optional Google Play subscription that unlocks
-    unlimited AI scans. Purchase processing is handled by Google Play; NutriSnap does not collect or
+    unlimited AI scans and removes ads. Purchase processing is handled by Google Play; NutriSnap does not collect or
     store your payment card details.
   </p>
 
@@ -222,12 +255,21 @@
       your Installation ID, email <strong>nutrisnap@charleshartmann.com</strong>. I will action the request
       within 30 days via the Firebase console.</li>
   </ul>
+  <p>
+    <strong>Advertising data:</strong> Data collected for ad requests (Advertising ID, approximate location,
+    device signals) is retained and governed by Google's own retention policies as described in their
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> — NutriSnap
+    does not separately store this data. Uninstalling the App, resetting your Advertising ID, or subscribing
+    to Premium (which stops ad requests entirely) all limit further collection going forward.
+  </p>
 
   <h2>8. Children's Privacy</h2>
   <p>
-    NutriSnap is not directed at children under the age of 16. We do not knowingly collect any personal information
-    from children. If you are a parent or guardian and believe your child has provided us with personal information,
-    contact us and we will advise you on removing it (though no such data exists on our servers).
+    NutriSnap is not directed at children under the age of 16 and is not designed or marketed for a child
+    audience. We do not knowingly collect any personal information from children, and we do not knowingly serve
+    personalized ads to children. If you are a parent or guardian and believe your child has provided us with
+    personal information, contact us and we will advise you on removing it (though no such data exists on our
+    servers).
   </p>
 
   <h2>9. Changes to This Policy</h2>
@@ -245,6 +287,9 @@
     <li><strong>Delete</strong> your data — Uninstall the App or clear app storage.</li>
     <li><strong>Object to processing</strong> — Since all personal processing is on-device and opt-in (you choose when to scan), you control everything.</li>
     <li><strong>Opt out of crash/analytics collection</strong> — Toggle Crashlytics, Performance, and Analytics collection off in <strong>Settings → Privacy &amp; Diagnostics</strong>, or uninstall the App.</li>
+    <li><strong>Manage ad personalization</strong> — Change your ad-consent choice in <strong>Settings →
+      Privacy &amp; Diagnostics → Ad Consent</strong>, reset/opt out of your device's Advertising ID in your
+      Android system settings, or subscribe to Premium to remove ads entirely.</li>
   </ul>
   <p>
     To exercise these rights, contact <strong>nutrisnap@charleshartmann.com</strong>. We will respond within 30 days.

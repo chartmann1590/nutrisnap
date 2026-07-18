@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +36,7 @@ import com.charles.nutrisnap.ui.components.NutriCard
 import com.charles.nutrisnap.ui.components.PrimaryButton
 import com.charles.nutrisnap.ui.components.SegmentedToggle
 import com.charles.nutrisnap.ui.components.UnitToggle
+import com.charles.nutrisnap.util.findActivity
 
 @Composable
 fun SettingsScreen(
@@ -45,6 +47,7 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val pipSoundsEnabled by viewModel.pipSoundsEnabled.collectAsStateWithLifecycle()
     val pipVoiceEnabled by viewModel.pipVoiceEnabled.collectAsStateWithLifecycle()
+    val activity = LocalContext.current.findActivity()
 
     Column(
         modifier = modifier
@@ -286,6 +289,11 @@ fun SettingsScreen(
             Spacer(Modifier.height(12.dp))
             TextButton(onClick = viewModel::resetFirebaseId) {
                 Text("Reset analytics identifier")
+            }
+            activity?.let { act ->
+                TextButton(onClick = { viewModel.manageAdConsent(act) }) {
+                    Text("Manage ad consent")
+                }
             }
         }
 

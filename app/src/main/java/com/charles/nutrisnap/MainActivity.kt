@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.charles.nutrisnap.ads.ConsentManager
+import com.charles.nutrisnap.ads.InterstitialAdManager
 import com.charles.nutrisnap.ai.LiteRtGemmaEngine
 import com.charles.nutrisnap.ui.NutriSnapApp as NutriSnapAppUi
 import com.charles.nutrisnap.ui.sound.PipSoundManager
@@ -29,9 +31,18 @@ class MainActivity : ComponentActivity(), ComponentCallbacks2 {
     @Inject
     lateinit var pipSoundManager: PipSoundManager
 
+    @Inject
+    lateinit var consentManager: ConsentManager
+
+    @Inject
+    lateinit var interstitialAdManager: InterstitialAdManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        consentManager.gatherConsentAndInitialize(this) {
+            interstitialAdManager.preload()
+        }
         setContent {
             NutriSnapTheme {
                 Surface(

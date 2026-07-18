@@ -1,0 +1,75 @@
+name: AI Report Trend Monitor
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+env:
+  GH_PROXY_URL: ${{ secrets.GH_PROXY_URL }}
+  WORKER_ADMIN_SECRET: ${{ secrets.WORKER_ADMIN_SECRET }}
+  # Alert if 5+ reports land in 24h, or 3+ reports share the same category.
+  TOTAL_THRESHOLD: 5
+  CATEGORY_THRESHOLD: 3
+
+jobs:
+  check-trends:
+    runs-on: ubuntu-latest
+    steps:
+      # Report contents (foodName/description) are attacker-influenced (any app user can submit
+      # a report), so they never get interpolated into a `${{ }}` shell expression anywhere in
+      # this workflow — everything below flows through files and env vars instead, which the
+      # shell does not re-parse for `${{ }}` expressions.
+      - name: Fetch report summary
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" "${GH_PROXY_URL}/reports/summary?sinceMs=$(($(date +%s%3N) - 86400000))" \
+            -H "X-Admin-Secret: ${WORKER_ADMIN_SECRET}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          echo "$RESPONSE" | sed '$d' > summary.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Worker returned HTTP $HTTP_CODE: $(cat summary.json)" >&2
+            exit 1
+          fi
+
+      - name: Evaluate trend thresholds
+        id: eval
+        run: |
+          TOTAL=$(jq '.total' summary.json)
+          TRIGGERED=$(jq --argjson t "$TOTAL_THRESHOLD" '.total >= $t' summary.json)
+          CATEGORY_HIT=$(jq --argjson t "$CATEGORY_THRESHOLD" '[.byCategory[] | select(. >= $t)] | length > 0' summary.json)
+          if [ "$TRIGGERED" = "true" ] || [ "$CATEGORY_HIT" = "true" ]; then
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo "## AI report trend detected"
+            echo
+            echo "**Total reports (last 24h):** $TOTAL"
+            echo
+            echo "**By category:**"
+            jq -r '.byCategory | to_entries[] | "- \(.key): \(.value)"' summary.json
+            echo
+            echo "**Recent samples:**"
+            # jq -r already renders each sample as a single plain-text line (no embedded
+            # newlines/markdown from user input can span or break out of this list).
+            jq -r '.samples[] | "- [\(.category)] \(.foodName // "?"): \(.description // "(no description)")"' summary.json
+          } > alert-body.md
+
+      - name: Open or update alert issue
+        if: steps.eval.outputs.alert == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" --label ai-report-trend --state open --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ] && [ "$EXISTING" != "null" ]; then
+            gh issue comment "$EXISTING" --repo "${{ github.repository }}" --body-file alert-body.md
+          else
+            gh issue create --repo "${{ github.repository }}" \
+              --title "⚠️ AI report trend detected ($(date -u +%Y-%m-%d))" \
+              --label ai-report-trend \
+              --body-file alert-body.md
+          fi

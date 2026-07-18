@@ -11,5 +11,11 @@
     "GH_REPO_OWNER": "chartmann1590",
     "GH_REPO_NAME": "nutrisnap",
     "FEEDBACK_ASSETS_DIR": "feedback-assets"
-  }
+  },
+  "kv_namespaces": [
+    {
+      "binding": "AI_REPORTS",
+      "id": "2b1d4b2288714abb8c915eed4c2f870d"
+    }
+  ]
 }

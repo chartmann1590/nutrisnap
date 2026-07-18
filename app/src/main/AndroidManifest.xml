@@ -26,6 +26,14 @@
         <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
         <uses-native-library android:name="libGLES_mali.so" android:required="false" />
 
+        <!-- AdMob -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true" />
+
         <!-- Custom WorkManager init via Hilt -->
         <provider
             android:name="androidx.startup.InitializationProvider"
