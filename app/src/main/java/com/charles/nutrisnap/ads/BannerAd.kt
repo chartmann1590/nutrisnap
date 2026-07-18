@@ -19,10 +19,10 @@ fun BannerAd(modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
     val adView = remember {
-        AdView(context).apply {
-            setAdSize(AdSize.BANNER)
-            adUnitId = BuildConfig.ADMOB_BANNER_ID
-        }
+        val view = AdView(context)
+        view.setAdSize(AdSize.BANNER)
+        view.adUnitId = BuildConfig.ADMOB_BANNER_ID
+        view
     }
 
     DisposableEffect(adView) {
