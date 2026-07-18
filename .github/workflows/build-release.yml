@@ -71,8 +71,17 @@ jobs:
       - name: Read version info
         id: version
         run: |
-          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | sed -n 's/.*versionName = "\(.*\)"/\1/p')
-          VERSION_CODE=$(grep 'versionCode' app/build.gradle.kts | sed -n 's/.*versionCode = \(.*\)/\1/p')
+          # Read the actual *resolved* values Gradle used (from the generated BuildConfig),
+          # not the source expression — grepping app/build.gradle.kts silently breaks whenever
+          # versionName/versionCode stop being simple string/int literals (e.g. env var
+          # fallbacks), producing a blank release tag instead of a build failure.
+          BUILD_CONFIG="app/build/generated/source/buildConfig/release/com/charles/nutrisnap/BuildConfig.java"
+          VERSION_NAME=$(sed -n 's/.*VERSION_NAME = "\(.*\)";/\1/p' "$BUILD_CONFIG")
+          VERSION_CODE=$(sed -n 's/.*VERSION_CODE = \(.*\);/\1/p' "$BUILD_CONFIG")
+          if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
+            echo "Could not read version info from $BUILD_CONFIG" >&2
+            exit 1
+          fi
           echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
