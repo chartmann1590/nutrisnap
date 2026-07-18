@@ -36,10 +36,15 @@ class NutriSnapApp : Application(), Configuration.Provider {
         // start; re-apply the user's saved opt-out choice here so it actually sticks across
         // app restarts rather than only taking effect until the process is killed.
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
-            val prefs = userPreferencesRepository.prefs.first()
-            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(prefs.crashlyticsEnabled)
-            FirebasePerformance.getInstance().setPerformanceCollectionEnabled(prefs.performanceEnabled)
-            FirebaseAnalytics.getInstance(this@NutriSnapApp).setAnalyticsCollectionEnabled(prefs.analyticsEnabled)
+            // Firebase isn't initialized in Robolectric unit tests (no real google-services
+            // processing happens there) and, defensively, may not be on a real device either
+            // if e.g. google-services.json is ever missing — don't let that crash the app.
+            runCatching {
+                val prefs = userPreferencesRepository.prefs.first()
+                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(prefs.crashlyticsEnabled)
+                FirebasePerformance.getInstance().setPerformanceCollectionEnabled(prefs.performanceEnabled)
+                FirebaseAnalytics.getInstance(this@NutriSnapApp).setAnalyticsCollectionEnabled(prefs.analyticsEnabled)
+            }
         }
     }
 }

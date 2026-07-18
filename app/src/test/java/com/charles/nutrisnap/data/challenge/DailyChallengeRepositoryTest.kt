@@ -69,6 +69,7 @@ class DailyChallengeRepositoryTest {
         override fun observeDayTotalsRange(startMs: Long, endMs: Long, offsetMs: Long): Flow<List<DayTotalsWithEpochDay>> = flowOf(emptyList())
         override fun observeDistinctLoggedLocalDays(offsetMs: Long): Flow<List<Long>> = flowOf(emptyList())
         override suspend fun countAll(): Int = 0
+        override suspend fun getById(id: Long): MealEntity? = null
     }
 
     private fun stubMealRepo() = object : MealRepository(null) {
