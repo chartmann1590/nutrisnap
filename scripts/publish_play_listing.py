@@ -84,6 +84,13 @@ def main() -> None:
     )
     check(r, "update store listing text + promo video URL")
 
+    def clear_images(image_type: str) -> None:
+        # Image uploads *append* to whatever this listing already has committed from a
+        # previous run — without clearing first, re-running this script repeatedly grows
+        # the screenshot count past Play's 8-per-language cap.
+        r = requests.delete(f"{API_BASE}/edits/{edit_id}/listings/{LOCALE}/{image_type}", headers=headers)
+        check(r, f"clear existing {image_type}")
+
     def upload_image(image_type: str, path: str) -> None:
         with open(path, "rb") as f:
             data = f.read()
@@ -93,6 +100,9 @@ def main() -> None:
             data=data,
         )
         check(r, f"upload {image_type}: {os.path.basename(path)}")
+
+    for image_type in ["icon", "featureGraphic", "phoneScreenshots", "sevenInchScreenshots", "tenInchScreenshots"]:
+        clear_images(image_type)
 
     upload_image("icon", os.path.join(ASSETS_DIR, "icon", "icon-512.png"))
     upload_image("featureGraphic", os.path.join(ASSETS_DIR, "feature-graphic.png"))
