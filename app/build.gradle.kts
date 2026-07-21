@@ -20,12 +20,12 @@ if (localPropsFile.exists()) {
 
 android {
     namespace = "com.charles.nutrisnap"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.charles.nutrisnap"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         val envVersionCode = System.getenv("ANDROID_VERSION_CODE")
         val envVersionName = System.getenv("ANDROID_VERSION_NAME")
         versionCode = envVersionCode?.toIntOrNull() ?: 2
