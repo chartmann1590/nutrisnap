@@ -136,6 +136,7 @@ private fun scanViewModel(
     PipEventBus(),
     mockk(relaxed = true),
     mockk(relaxed = true),
+    mockk(relaxed = true),
 )
 
 private class FakePremiumAccess(
