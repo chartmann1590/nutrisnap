@@ -398,7 +398,10 @@ fun ScanResultScreen(
         viewModel.events.collect { event ->
             if (event is ScanEvent.Logged) {
                 if (activity != null) {
-                    viewModel.maybeShowInterstitial(activity, onDone = onLogged)
+                    viewModel.maybeShowInterstitial(activity, onDone = {
+                        viewModel.maybeRequestReview(activity)
+                        onLogged()
+                    })
                 } else {
                     onLogged()
                 }

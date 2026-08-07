@@ -216,6 +216,9 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.user.messaging.platform)
 
+    // Play In-App Review — prompts the official Play review dialog, never a custom one
+    implementation(libs.play.review.ktx)
+
     // Phase 4 — LiteRT-LM (Gemma 4 on-device). Maven artifact: the runtime version must
     // be new enough to load the current Gemma 4 .litertlm (multi-signature vision encoder).
     implementation(libs.litertlm)

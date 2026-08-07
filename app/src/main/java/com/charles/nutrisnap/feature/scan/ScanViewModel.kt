@@ -13,6 +13,7 @@ import com.charles.nutrisnap.data.PipEventBus
 import com.charles.nutrisnap.data.PremiumAccess
 import com.charles.nutrisnap.data.PremiumEntitlement
 import com.charles.nutrisnap.data.PremiumPlan
+import com.charles.nutrisnap.data.ReviewPrompter
 import com.charles.nutrisnap.data.ScanQuota
 import com.charles.nutrisnap.data.ScanQuotaRepository
 import com.charles.nutrisnap.data.badge.BadgeDetector
@@ -145,6 +146,7 @@ class ScanViewModel @Inject constructor(
     private val pipEventBus: PipEventBus,
     private val interstitialAdManager: InterstitialAdManager,
     private val aiReportApi: AiReportApi,
+    private val reviewPrompter: ReviewPrompter,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ScanUiState>(ScanUiState.Idle)
@@ -238,6 +240,15 @@ class ScanViewModel @Inject constructor(
 
     fun buyPremium(activity: Activity, plan: PremiumPlan) {
         premiumAccess.startPurchase(activity, plan)
+    }
+
+    /**
+     * Prompts the official Play In-App Review dialog after a handful of successful logs.
+     * Called from the same "safe to interrupt" moment as the interstitial ad, sequenced after
+     * it so the two never overlap on screen.
+     */
+    fun maybeRequestReview(activity: Activity) {
+        viewModelScope.launch { reviewPrompter.maybeRequestReview(activity) }
     }
 
     /** Shows an interstitial ad every few meal logs; premium users never see ads. */
