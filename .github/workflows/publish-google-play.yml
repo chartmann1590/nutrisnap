@@ -146,14 +146,14 @@ jobs:
           fi
           echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is present"
 
-      - name: Publish to Google Play Production (draft)
+      - name: Publish to Google Play Production
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.nutrisnap
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: production
-          status: draft
+          status: completed
           whatsNewDirectory: distribution/whatsnew
           mappingFile: ${{ steps.mapping.outputs.path }}
 
