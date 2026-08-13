@@ -20,6 +20,7 @@ import com.charles.nutrisnap.feature.entry.EntryScreen
 import com.charles.nutrisnap.feature.history.DiaryScreen
 import com.charles.nutrisnap.feature.history.TrendsScreen
 import com.charles.nutrisnap.feature.milestones.MilestonesScreen
+import com.charles.nutrisnap.feature.moreapps.MoreAppsScreen
 import com.charles.nutrisnap.feature.onboarding.DownloadScreen
 import com.charles.nutrisnap.feature.onboarding.OnboardingEvent
 import com.charles.nutrisnap.feature.onboarding.OnboardingScreen
@@ -169,7 +170,13 @@ fun NutriNavHost(
             )
         }
         composable(Routes.SETTINGS) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenMoreApps = { navController.navigate(Routes.MORE_APPS) },
+            )
+        }
+        composable(Routes.MORE_APPS) {
+            MoreAppsScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.PIP_CHAT) {
             PipChatScreen(

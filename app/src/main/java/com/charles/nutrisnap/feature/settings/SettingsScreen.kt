@@ -1,5 +1,6 @@
 ﻿package com.charles.nutrisnap.feature.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +42,7 @@ import com.charles.nutrisnap.util.findActivity
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenMoreApps: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -328,6 +330,27 @@ fun SettingsScreen(
                     )
                 }
                 Switch(checked = pipVoiceEnabled, onCheckedChange = { viewModel.setPipVoiceEnabled(it) })
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        NutriCard(
+            cornerRadius = 20.dp,
+            padding = 16.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onOpenMoreApps),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("More apps from this developer", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Check out our other privacy-first apps",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 

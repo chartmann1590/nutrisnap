@@ -27,6 +27,7 @@ object Routes {
     const val ACHIEVEMENTS = "achievements"
     const val PIP_ROOM = "pip_room"
     const val MILESTONES = "milestones"
+    const val MORE_APPS = "more_apps"
 
     fun scanResult(estimateKey: String) = "scan_result/$estimateKey"
     fun entry(mode: String, bitmapKey: String? = null) =
