@@ -69,7 +69,7 @@ jobs:
             gh issue comment "$EXISTING" --repo "${{ github.repository }}" --body-file alert-body.md
           else
             gh issue create --repo "${{ github.repository }}" \
-              --title "AI report trend detected ($(date -u +%Y-%m-%d))" \
+              --title "⚠️ AI report trend detected ($(date -u +%Y-%m-%d))" \
               --label ai-report-trend \
               --body-file alert-body.md
           fi
