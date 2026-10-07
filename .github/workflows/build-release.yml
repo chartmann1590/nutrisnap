@@ -23,6 +23,8 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Decode keystore
         run: printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d -i > nutrisnap-release.jks
