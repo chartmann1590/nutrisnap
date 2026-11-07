@@ -47,7 +47,7 @@ tap (?i)^me$
 wait 3
 adclose
 shot 06-me
-scrollto (?i)^settings$
+tap (?i)^open settings$
 wait 4
 adclose
 shot 07-settings

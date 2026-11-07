@@ -37,7 +37,7 @@ shot 20-home
 tap (?i)^me$
 wait 3
 adclose
-scrollto (?i)^settings$
+tap (?i)^open settings$
 wait 4
 adclose
 scrollto (?i)^restore purchases$
