@@ -1,6 +1,21 @@
 launch
 wait 15
 shot 01-launch
+# onboarding: the Continue button is drawn at y~2110-2210 of 2340 but its accessibility node reports 0,0 bounds, so tap it by position
+tapxy 500 923
+wait 3
+shot 01b-onboarding-step2
+tapxy 500 923
+wait 3
+shot 01c-onboarding-step3
+tapxy 500 923
+wait 3
+shot 01d-onboarding-step4
+tapxy 500 923
+wait 3
+shot 01e-onboarding-step5
+tapxy 500 923
+wait 4
 taploop (?i)^(next|next step|continue|get started|skip|skip for now|allow|ok|accept|agree|got it|start|i agree|not now|later|maybe later|no thanks|done|while using the app|only this time|start tracking)$
 adclose
 wait 5
