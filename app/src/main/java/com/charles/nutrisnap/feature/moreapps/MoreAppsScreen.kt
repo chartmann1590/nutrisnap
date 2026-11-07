@@ -66,15 +66,16 @@ val crossPromoApps: List<CrossPromoApp> = listOf(
 )
 
 fun openPlayStoreListing(context: Context, packageName: String) {
+    if (com.charles.nutrisnap.BuildConfig.STORE == "direct") { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://charleshartmann.com/apps/"))) }; return } // direct build: no Play Store
     try {
         context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")).apply {
+            Intent(Intent.ACTION_VIEW, Uri.parse((if (com.charles.nutrisnap.BuildConfig.STORE == "direct") "https://charleshartmann.com/apps/" else "market://details?id=$packageName"))).apply {
                 setPackage("com.android.vending")
             }
         )
     } catch (e: ActivityNotFoundException) {
         context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+            Intent(Intent.ACTION_VIEW, Uri.parse((if (com.charles.nutrisnap.BuildConfig.STORE == "direct") "https://charleshartmann.com/apps/" else "https://play.google.com/store/apps/details?id=$packageName")))
         )
     }
 }

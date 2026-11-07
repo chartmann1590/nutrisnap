@@ -2,7 +2,7 @@ name: Build Android
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "**", "!direct-stripe" ]
   pull_request:
     branches: [ main, master ]
 

@@ -35,6 +35,7 @@ open class ReviewPrompter @Inject constructor(
      * ever triggers the real Play dialog once per install.
      */
     open suspend fun maybeRequestReview(activity: Activity) {
+        if (com.charles.nutrisnap.BuildConfig.STORE == "direct") return // direct (non-Play) build: no Play review prompt
         val shouldRequest = dataStore?.edit { prefs ->
             val alreadyRequested = prefs[Keys.REQUESTED] ?: false
             val count = (prefs[Keys.LOGGED_COUNT] ?: 0) + 1

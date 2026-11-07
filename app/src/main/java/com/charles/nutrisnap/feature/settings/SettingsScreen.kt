@@ -38,6 +38,7 @@ import com.charles.nutrisnap.ui.components.PrimaryButton
 import com.charles.nutrisnap.ui.components.SegmentedToggle
 import com.charles.nutrisnap.ui.components.UnitToggle
 import com.charles.nutrisnap.util.findActivity
+import com.hartmannstudios.direct.DirectBilling
 
 @Composable
 fun SettingsScreen(
@@ -251,7 +252,23 @@ fun SettingsScreen(
                 Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(8.dp))
-            TextButton(onClick = viewModel::restorePurchases) {
+            if (DirectBilling.isDirect) {
+                if (!state.premiumEntitlement.isPremium) {
+                    viewModel.plans.forEach { plan ->
+                        PrimaryButton(
+                            text = "Go Premium - ${plan.formattedPrice}",
+                            onClick = { activity?.let { viewModel.buyPremium(it, plan) } },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    Text("Prices in USD. Secure checkout by Stripe.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Row {
+                    TextButton(onClick = { activity?.let { viewModel.restorePurchases(it) } }) { Text("Restore purchases") }
+                    TextButton(onClick = { activity?.let { viewModel.manageSubscription(it) } }) { Text("Manage subscription") }
+                }
+            } else TextButton(onClick = viewModel::restorePurchases) {
                 Text("Restore purchases")
             }
         }

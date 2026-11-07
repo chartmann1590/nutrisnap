@@ -60,6 +60,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charles.nutrisnap.data.MONTHLY_BASE_PLAN_ID
+import com.hartmannstudios.direct.DirectBilling
 import com.charles.nutrisnap.data.PremiumPlan
 import com.charles.nutrisnap.data.ScanQuota
 import com.charles.nutrisnap.data.YEARLY_BASE_PLAN_ID
@@ -262,7 +263,7 @@ fun ScanScreen(
                 onBuy = { plan ->
                     context.findActivity()?.let { viewModel.buyPremium(it, plan) }
                 },
-                onRestore = viewModel::restorePurchases,
+                onRestore = { context.findActivity()?.let { viewModel.restorePurchases(it) } ?: viewModel.restorePurchases() },
                 onClose = viewModel::resetState,
             )
         }
@@ -331,7 +332,8 @@ private fun PremiumPaywall(
 
             Spacer(Modifier.height(12.dp))
             Text(
-                "Subscription renews automatically through Google Play unless canceled.",
+                if (DirectBilling.isDirect) "Prices in USD. Secure checkout by Stripe. Subscriptions renew automatically until you cancel (Settings > Premium > Manage subscription). Your purchase is tied to the email you enter at checkout."
+                else "Subscription renews automatically through Google Play unless canceled.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

@@ -146,4 +146,10 @@ class SettingsViewModel @Inject constructor(
     fun restorePurchases() {
         premiumAccess.restorePurchases()
     }
+
+    // Direct (GitHub / charleshartmann.com) builds: buy / restore / manage through Stripe from Settings.
+    val plans get() = premiumAccess.plans.value
+    fun buyPremium(activity: android.app.Activity, plan: com.charles.nutrisnap.data.PremiumPlan) = premiumAccess.startPurchase(activity, plan)
+    fun restorePurchases(activity: android.app.Activity) = premiumAccess.restorePurchases(activity)
+    fun manageSubscription(activity: android.app.Activity) = premiumAccess.manageSubscription(activity)
 }

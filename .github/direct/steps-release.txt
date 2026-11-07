@@ -1,0 +1,48 @@
+launch
+wait 15
+shot 01-launch
+taploop (?i)^(next|next step|continue|get started|skip|skip for now|allow|ok|accept|agree|got it|start|i agree|not now|later|maybe later|no thanks|done|while using the app|only this time|start tracking)$
+adclose
+wait 5
+shot 02-model-download
+wait 60
+wait 60
+shot 02b-download-2m
+wait 60
+wait 60
+wait 60
+shot 02c-download-5m
+wait 60
+wait 60
+wait 60
+shot 02d-download-8m
+taploop (?i)^(next|continue|get started|skip|ok|got it|done|not now|maybe later|no thanks|allow|while using the app)$
+adclose
+adclose
+shot 03-home
+tap (?i)^diary$
+wait 3
+adclose
+shot 04-diary
+tap (?i)^trends$
+wait 3
+adclose
+shot 05-trends
+tap (?i)^me$
+wait 3
+adclose
+shot 06-me
+scrollto (?i)^settings$
+wait 4
+adclose
+shot 07-settings
+scrollto (?i)^go premium - .*month$
+wait 3
+shot 11-email
+type hartmannstudios@mail.tab.bot
+tap (?i)^continue$
+wait 25
+shot 12-stripe-checkout
+tap (?i)^close$
+wait 3
+shot 13-after-close

@@ -35,4 +35,10 @@ interface PremiumAccess {
     fun refresh()
     fun restorePurchases()
     fun startPurchase(activity: Activity, plan: PremiumPlan)
+
+    /** Direct (GitHub / charleshartmann.com) builds: restore a Stripe purchase by email. Play builds: same as restorePurchases(). */
+    fun restorePurchases(activity: Activity) = restorePurchases()
+
+    /** Direct builds: open the Stripe customer portal. No-op in Play builds. */
+    fun manageSubscription(activity: Activity) {}
 }

@@ -264,6 +264,10 @@ class ScanViewModel @Inject constructor(
         premiumAccess.restorePurchases()
     }
 
+    fun restorePurchases(activity: Activity) {
+        premiumAccess.restorePurchases(activity)
+    }
+
     fun onAnalyzed(bitmapKey: String, estimate: FoodEstimate) {
         _state.value = ScanUiState.Result(estimate)
     }

@@ -13,6 +13,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.hartmannstudios.direct.DirectBilling
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,20 +36,48 @@ class BillingRepository @Inject constructor(
 
     private val productDetails = mutableMapOf<String, ProductDetails>()
 
-    private val billingClient = BillingClient.newBuilder(context)
-        .setListener(this)
-        .enablePendingPurchases(
-            PendingPurchasesParams.newBuilder()
-                .enableOneTimeProducts()
-                .build(),
-        )
-        .build()
+    // Lazy: direct (non-Play) builds never create a Google Play BillingClient.
+    private val billingClient by lazy {
+        BillingClient.newBuilder(context)
+            .setListener(this)
+            .enablePendingPurchases(
+                PendingPurchasesParams.newBuilder()
+                    .enableOneTimeProducts()
+                    .build(),
+            )
+            .build()
+    }
 
     init {
-        connect()
+        if (DirectBilling.isDirect) startDirect(context) else connect()
+    }
+
+    // ── Direct (GitHub / charleshartmann.com) build: Stripe Checkout through DirectBilling instead of Google Play ──
+    private fun startDirect(context: Context) {
+        DirectBilling.init(context, "nutrisnap")
+        _plans.value = listOf(
+            PremiumPlan(PREMIUM_PRODUCT_ID, YEARLY_BASE_PLAN_ID, "", "$19.99/year", "P1Y"),
+            PremiumPlan(PREMIUM_PRODUCT_ID, MONTHLY_BASE_PLAN_ID, "", "$2.99/month", "P1M"),
+        )
+        DirectBilling.addListener { updateDirect() }
+        updateDirect()
+    }
+
+    private fun updateDirect() {
+        val owned = DIRECT_KEYS.firstOrNull { DirectBilling.isEntitled(it) }
+        _entitlement.value = PremiumEntitlement(isPremium = owned != null, productId = owned?.let { PREMIUM_PRODUCT_ID })
+    }
+
+    override fun restorePurchases(activity: Activity) {
+        if (DirectBilling.isDirect) DirectBilling.restore(activity) else restorePurchases()
+    }
+
+    override fun manageSubscription(activity: Activity) {
+        if (DirectBilling.isDirect) DirectBilling.manageSubscription(activity)
     }
 
     override fun refresh() {
+        if (DirectBilling.isDirect) { updateDirect(); return }
         if (billingClient.isReady) {
             queryProducts()
             queryPurchases()
@@ -58,11 +87,16 @@ class BillingRepository @Inject constructor(
     }
 
     override fun restorePurchases() {
+        if (DirectBilling.isDirect) { updateDirect(); return }
         refresh()
         _billingMessage.value = "Checking Google Play purchases..."
     }
 
     override fun startPurchase(activity: Activity, plan: PremiumPlan) {
+        if (DirectBilling.isDirect) {
+            DirectBilling.purchase(activity, if (plan.basePlanId == YEARLY_BASE_PLAN_ID) DIRECT_YEARLY else DIRECT_MONTHLY)
+            return
+        }
         val details = productDetails[plan.productId] ?: run {
             _billingMessage.value = "Premium is not available yet. Try again in a moment."
             refresh()
@@ -166,6 +200,11 @@ class BillingRepository @Inject constructor(
         }
     }
 }
+
+// Stripe catalog keys (shared Hartmann Studios billing worker, app "nutrisnap")
+private const val DIRECT_MONTHLY = "nutrisnap_premium:premium_monthly"
+private const val DIRECT_YEARLY = "nutrisnap_premium:premium_yearly"
+private val DIRECT_KEYS = arrayOf(DIRECT_MONTHLY, DIRECT_YEARLY)
 
 private fun ProductDetails.toPremiumPlans(): List<PremiumPlan> =
     subscriptionOfferDetails.orEmpty().mapNotNull { offer ->
