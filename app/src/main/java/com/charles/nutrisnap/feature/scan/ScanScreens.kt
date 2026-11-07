@@ -141,7 +141,11 @@ fun ScanScreen(
                 val previewView = PreviewView(ctx)
                 val provider = ProcessCameraProvider.getInstance(ctx)
                 provider.addListener({
-                    val cameraProvider = provider.get()
+                    // Amazon Appstore build: a Fire device with no usable camera makes CameraX fail here; stay on the
+                    // screen (Close still works) instead of crashing. Play build unchanged.
+                    val cameraProvider = try { provider.get() } catch (e: Exception) {
+                        if (com.charles.nutrisnap.BuildConfig.STORE == "amazon") return@addListener else throw e
+                    }
                     val preview = Preview.Builder().build().also {
                         it.setSurfaceProvider(previewView.surfaceProvider)
                     }
