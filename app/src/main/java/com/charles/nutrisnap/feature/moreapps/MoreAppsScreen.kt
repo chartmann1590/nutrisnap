@@ -68,13 +68,13 @@ val crossPromoApps: List<CrossPromoApp> = listOf(
 fun openPlayStoreListing(context: Context, packageName: String) {
     try {
         context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")).apply {
-                setPackage("com.android.vending")
+            Intent(Intent.ACTION_VIEW, Uri.parse((if (com.charles.nutrisnap.BuildConfig.STORE == "amazon") "amzn://apps/android?p=$packageName" else "market://details?id=$packageName"))).apply {
+                if (!(com.charles.nutrisnap.BuildConfig.STORE == "amazon")) setPackage("com.android.vending")
             }
         )
     } catch (e: ActivityNotFoundException) {
         context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+            Intent(Intent.ACTION_VIEW, Uri.parse((if (com.charles.nutrisnap.BuildConfig.STORE == "amazon") "https://www.amazon.com/gp/mas/dl/android?p=$packageName" else "https://play.google.com/store/apps/details?id=$packageName")))
         )
     }
 }

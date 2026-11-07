@@ -255,7 +255,10 @@ fun ScanScreen(
             }
         }
 
-        if (state is ScanUiState.Paywall) {
+        if (state is ScanUiState.Paywall && com.charles.nutrisnap.BuildConfig.STORE == "amazon") {
+            // Amazon Appstore build: no Premium / Play Billing. The monthly free-scan limit stays, with no upgrade offer.
+            ScanLimitReached(onClose = viewModel::resetState)
+        } else if (state is ScanUiState.Paywall) {
             PremiumPaywall(
                 plans = accessState.plans,
                 billingMessage = accessState.billingMessage,
@@ -284,6 +287,31 @@ private fun QuotaBadge(
             style = MaterialTheme.typography.labelLarge,
             color = Color.White,
         )
+    }
+}
+
+@Composable
+private fun ScanLimitReached(onClose: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.84f))
+            .padding(20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        NutriCard(cornerRadius = 24.dp, padding = 20.dp, modifier = Modifier.fillMaxWidth()) {
+            Text("Free scans used", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "You used this month's free AI meal scans. They reset next month. You can still log meals by hand.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = onClose) { Text("OK") }
+            }
+        }
     }
 }
 
