@@ -2,7 +2,7 @@ name: Build Android
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "**", "!amazon" ]  # amazon branch: built by amazon.yml only
   pull_request:
     branches: [ main, master ]
 
