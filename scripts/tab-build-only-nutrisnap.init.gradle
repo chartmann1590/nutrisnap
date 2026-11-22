@@ -1,0 +1,19 @@
+// Build an unsigned, real-config candidate. Only the CI signer may sign it after verification.
+gradle.beforeProject { p ->
+    if (p.path == ':app') {
+        p.pluginManager.withPlugin('com.android.application') {
+            p.extensions.getByName('androidComponents').finalizeDsl { d ->
+                d.buildTypes.getByName('release').signingConfig = null
+            }
+        }
+    }
+}
+gradle.taskGraph.whenReady { g ->
+    g.allTasks.each { t ->
+        if (t.name.toLowerCase(java.util.Locale.ROOT) =~ /(upload|deploy|publish|appdistribution|firebaseappdist)/) {
+            if (t.path in [':app:uploadCrashlyticsMappingFileRelease', ':app:uploadCrashlyticsSymbolFileRelease'] && t.class.name.startsWith('com.google.firebase.crashlytics.buildtools.gradle.tasks.')) t.enabled=false
+            else throw new GradleException('Outward task forbidden in build-only pipeline: '+t.path)
+        }
+        if (t.path == ':app:signReleaseBundle' && t.project.extensions.android.buildTypes.getByName('release').signingConfig != null) throw new GradleException('Unexpected configured signer')
+    }
+}

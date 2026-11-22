@@ -29,16 +29,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.FlashOff
 import androidx.compose.material.icons.rounded.FlashOn
 import androidx.compose.material.icons.rounded.PhotoLibrary
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -64,7 +60,8 @@ import com.charles.nutrisnap.data.PremiumPlan
 import com.charles.nutrisnap.data.ScanQuota
 import com.charles.nutrisnap.data.YEARLY_BASE_PLAN_ID
 import com.charles.nutrisnap.data.db.MealType
-import com.charles.nutrisnap.data.report.AiReportCategory
+import com.charles.nutrisnap.data.report.AiReportSurface
+import com.charles.nutrisnap.ui.components.AiResponseReportButton
 import com.charles.nutrisnap.ui.components.ConfidencePill
 import com.charles.nutrisnap.ui.components.MacroTile
 import com.charles.nutrisnap.ui.components.NutriCard
@@ -376,9 +373,7 @@ fun ScanResultScreen(
     var editableProtein by remember { mutableStateOf("") }
     var editableCarbs by remember { mutableStateOf("") }
     var editableFat by remember { mutableStateOf("") }
-    var showReportDialog by remember { mutableStateOf(false) }
     val activity = LocalContext.current.findActivity()
-    val reportState by viewModel.reportState.collectAsStateWithLifecycle()
 
     // The estimate is handed over from the Scan screen's analysis via EstimateCache (this
     // destination has its own ViewModel instance, so it can't read the analyzing VM's state).
@@ -417,13 +412,7 @@ fun ScanResultScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(estimate.name, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
                 ConfidencePill(percent = (estimate.confidence * 100).toInt())
-                IconButton(onClick = { showReportDialog = true }) {
-                    Icon(
-                        Icons.Rounded.Flag,
-                        contentDescription = "Report this AI response",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                AiResponseReportButton(AiReportSurface.PHOTO_SCAN)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -477,87 +466,4 @@ fun ScanResultScreen(
             }
         }
     }
-
-    if (showReportDialog && estimate != null) {
-        ReportAiResponseDialog(
-            reportState = reportState,
-            onSubmit = { category, description -> viewModel.submitReport(estimate, category, description) },
-            onDismiss = {
-                showReportDialog = false
-                viewModel.resetReportState()
-            },
-        )
-    }
-}
-
-@Composable
-private fun ReportAiResponseDialog(
-    reportState: ScanViewModel.ReportSubmitState,
-    onSubmit: (AiReportCategory, String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var selectedCategory by remember { mutableStateOf(AiReportCategory.WRONG_FOOD) }
-    var description by remember { mutableStateOf("") }
-    val submitting = reportState is ScanViewModel.ReportSubmitState.Submitting
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Report this response") },
-        text = {
-            when (reportState) {
-                is ScanViewModel.ReportSubmitState.Success -> {
-                    Text("Thanks — your report was sent.")
-                }
-                else -> {
-                    Column {
-                        AiReportCategory.entries.forEach { category ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                                    .clickable(enabled = !submitting) { selectedCategory = category },
-                            ) {
-                                RadioButton(
-                                    selected = selectedCategory == category,
-                                    onClick = { selectedCategory = category },
-                                    enabled = !submitting,
-                                )
-                                Text(category.label, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = { Text("Details (optional)") },
-                            enabled = !submitting,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        if (reportState is ScanViewModel.ReportSubmitState.Error) {
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                reportState.message,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            if (reportState is ScanViewModel.ReportSubmitState.Success) {
-                TextButton(onClick = onDismiss) { Text("Done") }
-            } else {
-                TextButton(
-                    enabled = !submitting,
-                    onClick = { onSubmit(selectedCategory, description) },
-                ) { Text(if (submitting) "Sending…" else "Submit") }
-            }
-        },
-        dismissButton = {
-            if (reportState !is ScanViewModel.ReportSubmitState.Success) {
-                TextButton(onClick = onDismiss, enabled = !submitting) { Text("Cancel") }
-            }
-        },
-    )
 }

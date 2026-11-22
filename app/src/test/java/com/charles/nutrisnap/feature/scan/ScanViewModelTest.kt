@@ -127,16 +127,15 @@ private fun scanViewModel(
     premium: PremiumAccess = FakePremiumAccess(),
     quota: FakeScanQuotaRepository = FakeScanQuotaRepository(),
 ) = ScanViewModel(
-    FakeGemmaEngine(),
-    fakeMealRepo(),
-    premium,
-    quota,
-    mockk(relaxed = true),
-    mockk(relaxed = true),
-    PipEventBus(),
-    mockk(relaxed = true),
-    mockk(relaxed = true),
-    mockk(relaxed = true),
+    gemmaEngine = FakeGemmaEngine(),
+    mealRepository = fakeMealRepo(),
+    premiumAccess = premium,
+    scanQuotaRepository = quota,
+    badgeDetector = mockk(relaxed = true),
+    dailyChallengeRepository = mockk(relaxed = true),
+    pipEventBus = PipEventBus(),
+    interstitialAdManager = mockk(relaxed = true),
+    reviewPrompter = mockk(relaxed = true),
 )
 
 private class FakePremiumAccess(

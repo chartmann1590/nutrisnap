@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charles.nutrisnap.ai.FoodEstimate
+import com.charles.nutrisnap.data.report.AiReportSurface
+import com.charles.nutrisnap.ui.components.AiResponseReportButton
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
 import com.charles.nutrisnap.ui.components.ConfidencePill
@@ -195,6 +197,7 @@ fun EntryScreen(
                         }
                     }
                     is EntryUiState.EstimateReady -> {
+                        AiResponseReportButton(AiReportSurface.MEAL_DESCRIPTION)
                         EstimateContent(
                             estimate = s.estimate,
                             editableKcal = editableKcal,

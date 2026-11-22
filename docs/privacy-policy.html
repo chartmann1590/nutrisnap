@@ -35,7 +35,7 @@
 <div class="legal-content">
   <a href="index.html" class="back-link">&larr; Back to NutriSnap</a>
   <h1>Privacy Policy</h1>
-  <p class="meta">Last updated: July 18, 2026 &middot; Version 1.2 &middot; App version: 0.2.0</p>
+  <p class="meta">Release draft &middot; Version 1.3</p>
 
   <h2>1. Who We Are</h2>
   <p>
@@ -63,24 +63,27 @@
   <p>
     When you use the <strong>AI food scan</strong> feature, the App accesses your device's camera or photo gallery
     to capture an image of your meal. That image is processed <strong>entirely on your device</strong> by the
-    on-device Gemma 4 AI model (via LiteRT-LM). The image is held in memory only for the duration of the analysis
-    and is then discarded. <strong>No photo is ever uploaded, saved to a server, or transmitted off your device.</strong>
+    on-device Gemma 4 AI model (via LiteRT-LM). Camera captures may be saved in a local app cache and a meal record
+    can reference your local photo. <strong>NutriSnap does not upload scan photos for analysis or when you flag an AI
+    response.</strong> A photo you deliberately attach as a screenshot to the separate public feedback feature is sent
+    as described in Section 3.7.
   </p>
 
   <h3>3.2 Meal, Weight &amp; Goal Data</h3>
   <p>
     Your meal history, weight entries, daily calorie goals, and preferences are stored <strong>locally on your device</strong>
-    using Room (SQLite database) and DataStore (preferences). This data never leaves your phone. You can view,
-    edit, or delete it at any time via the App's Settings screen.
+    using Room (SQLite database) and DataStore (preferences). The App does not routinely transmit those records.
+    If enabled, Android backup may include local records; if you choose to export or share records, the destination
+    you choose receives them. Edit or remove individual records in the App or clear the App's storage to remove local data.
   </p>
 
   <h3>3.3 Permissions</h3>
   <p>The App may request the following permissions:</p>
   <ul>
-    <li><strong>CAMERA</strong> — Used solely for taking photos of food for AI analysis. No images are transmitted.</li>
+    <li><strong>CAMERA</strong> — Used for food photos and barcodes. Recognition runs on-device.</li>
     <li><strong>POST_NOTIFICATIONS</strong> — Used to show download progress when the AI model is being downloaded (one-time, optional).</li>
-    <li><strong>INTERNET</strong> — Used for the optional one-time download of the Gemma 4 AI model from HuggingFace, for communicating with Firebase services (crash reporting, performance monitoring, analytics, remote config, and potential push notifications), and for requesting ads from Google AdMob.</li>
-    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download, Firebase operations, and ad requests.</li>
+    <li><strong>INTERNET</strong> — Used for the optional one-time download of the Gemma 4 AI model from HuggingFace, for communicating with Firebase services (crash reporting, performance monitoring, analytics, remote config, and potential push notifications), for requesting ads from Google AdMob, for Google Play purchases and entitlements, and for reports or feedback you submit.</li>
+    <li><strong>ACCESS_NETWORK_STATE</strong> — Used to detect connectivity status for the model download, Firebase operations, ads, purchases, and reporting.</li>
     <li><strong>com.google.android.gms.permission.AD_ID</strong> — Added automatically by the Google Mobile Ads SDK on Android 13+ so the app may read the (user-resettable) Advertising ID for ad personalization and frequency capping, subject to your consent choice described in <a href="#ads">Section 6</a>.</li>
   </ul>
 
@@ -126,6 +129,20 @@
     &amp; Diagnostics</strong> in the App, or by uninstalling.
   </p>
 
+  <h3>3.7 Optional AI Reports and Public Feedback</h3>
+  <p><strong>AI reports:</strong> When you tap “Send report” on a photo scan, a meal-description estimate,
+    or a Pip response, the App sends the selected reason, feature name, and App version to our reporting service
+    for safety and quality review. The report does not include your photo, typed text, chat response, or nutrition
+    estimate in the version with this reporting prompt. Some earlier versions send the generated meal name and
+    estimate and any note entered in the old report dialog. See the report prompt in your version before sending.
+    The reporting service is hosted on Cloudflare. Email nutrisnap@charleshartmann.com for privacy or deletion requests.</p>
+  <p><strong>Bug reports and replies:</strong> This separate, optional Settings feature sends the title/message and any
+    name, email address, screenshot, or device diagnostics you choose to include to the app’s public GitHub issue
+    tracker. Attached screenshots are uploaded to the repository. Other people can read or copy what you post.
+    Do not include meal records, health information, or personal details in public feedback. Clearing app storage
+    does not delete a GitHub post or an attachment. Contact the privacy email above to request removal; copies made by
+    other people or sites may remain.</p>
+
   <h2>4. Data We Collect — Website</h2>
   <p>
     The NutriSnap website (this site) is a <strong>static site</strong> hosted on GitHub Pages.
@@ -140,13 +157,15 @@
   </p>
 
   <h2 id="third-party">5. Third-Party Services</h2>
-  <p>NutriSnap uses the following third-party components, all of which operate on-device or are downloaded once:</p>
+  <p>NutriSnap uses the following on-device and network services:</p>
   <ul>
     <li><strong>Gemma 4 Model</strong> (Google LLC) — On-device AI model for food recognition. Downloaded from HuggingFace under the Gemma license. No data is sent to Google.</li>
     <li><strong>LiteRT-LM</strong> (Google AI Edge) — Runtime for running the Gemma model on-device. Apache 2.0 license.</li>
     <li><strong>ML Kit Barcode Scanning</strong> (Google LLC) — On-device barcode reader. No network calls.</li>
     <li><strong>HuggingFace</strong> — Hosts the Gemma 4 model file for download. The download is optional, one-time, and direct from HuggingFace's servers.</li>
-    <li><strong>OkHttp</strong> (Square, Inc.) — HTTP client used for the model download. Apache 2.0 license.</li>
+    <li><strong>OkHttp</strong> (Square, Inc.) — HTTP client used for model downloads and app network requests. Apache 2.0 license.</li>
+    <li><strong>Cloudflare</strong> and <strong>GitHub</strong> — Optional report service and public feedback tracker as described in Section 3.7.</li>
+    <li><strong>Google Play Billing</strong> — Processes Premium purchases and renewals, and returns their status to the App.</li>
     <li><strong>Firebase (Google LLC)</strong> — Collection of cloud services used under the
       <strong>Spark (free) plan</strong>. Firebase acts as a sub-processor on Google Cloud infrastructure.
       The following Firebase products are integrated into NutriSnap:
@@ -237,8 +256,8 @@
     <li><strong>Export your data:</strong> Use the Settings &rarr; Export Data feature (available in-app) to save a copy before deleting.</li>
   </ul>
   <p>
-    Since we have no servers hosting your personal data, there is nothing for us to delete on our end. Uninstalling
-    the App removes all locally stored data.
+    Uninstalling removes the App's local data but not any copies in your backups, exports, or reports.
+    For optional reports or public feedback, see Section 3.7.
   </p>
   <p>
     <strong>Firebase diagnostic data:</strong>

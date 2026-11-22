@@ -48,6 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charles.nutrisnap.data.db.ChatMessageEntity
 import com.charles.nutrisnap.data.db.ChatRole
+import com.charles.nutrisnap.data.report.AiReportSurface
+import com.charles.nutrisnap.ui.components.AiResponseReportButton
 import com.charles.nutrisnap.ui.components.Pip
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +113,9 @@ fun PipChatScreen(
                             { viewModel.speak(msg.text) }
                         } else null,
                     )
+                    if (msg.role == ChatRole.PIP) {
+                        AiResponseReportButton(AiReportSurface.PIP_CHAT)
+                    }
                 }
                 if (streamingText != null) {
                     item(key = "streaming") {

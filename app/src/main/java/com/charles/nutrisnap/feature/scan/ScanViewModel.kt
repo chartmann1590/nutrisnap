@@ -21,8 +21,6 @@ import com.charles.nutrisnap.data.challenge.DailyChallengeRepository
 import com.charles.nutrisnap.data.db.MealEntity
 import com.charles.nutrisnap.data.db.MealSource
 import com.charles.nutrisnap.data.db.MealType
-import com.charles.nutrisnap.data.report.AiReportApi
-import com.charles.nutrisnap.data.report.AiReportCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -145,7 +143,6 @@ class ScanViewModel @Inject constructor(
     private val dailyChallengeRepository: DailyChallengeRepository,
     private val pipEventBus: PipEventBus,
     private val interstitialAdManager: InterstitialAdManager,
-    private val aiReportApi: AiReportApi,
     private val reviewPrompter: ReviewPrompter,
 ) : ViewModel() {
 
@@ -154,31 +151,6 @@ class ScanViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<ScanEvent>()
     val events: SharedFlow<ScanEvent> = _events.asSharedFlow()
-
-    sealed interface ReportSubmitState {
-        data object Idle : ReportSubmitState
-        data object Submitting : ReportSubmitState
-        data object Success : ReportSubmitState
-        data class Error(val message: String) : ReportSubmitState
-    }
-
-    private val _reportState = MutableStateFlow<ReportSubmitState>(ReportSubmitState.Idle)
-    val reportState: StateFlow<ReportSubmitState> = _reportState.asStateFlow()
-
-    fun submitReport(estimate: FoodEstimate, category: AiReportCategory, description: String) {
-        viewModelScope.launch {
-            _reportState.value = ReportSubmitState.Submitting
-            runCatching { aiReportApi.submitReport(category, description, estimate) }
-                .onSuccess { _reportState.value = ReportSubmitState.Success }
-                .onFailure {
-                    _reportState.value = ReportSubmitState.Error(it.message ?: "Failed to send report")
-                }
-        }
-    }
-
-    fun resetReportState() {
-        _reportState.value = ReportSubmitState.Idle
-    }
 
     val accessState: StateFlow<ScanAccessUiState> = combine(
         premiumAccess.entitlement,

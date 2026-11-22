@@ -192,11 +192,9 @@ private fun ReportDialog(
                         .padding(12.dp),
                 ) {
                     Text(
-                        "Your report will be submitted to this app\u2019s GitHub issue tracker. " +
-                            "Do not include passwords, private keys, medical information, " +
-                            "financial information, or anything you do not want visible to " +
-                            "the repository maintainers. If this repository is public, your " +
-                            "report may be publicly visible.",
+                        "This report goes to a public GitHub tracker. Anyone may see its text, " +
+                            "name, email, screenshots, or device details if you include them. " +
+                            "Leave out contact details, meal and health records, and anything private.",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                     )
